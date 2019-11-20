@@ -33,6 +33,11 @@
       }
     }
   },
+  "variables": {
+    "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
+    "iotHubKeyName": "iothubowner",
+    "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]"
+  },
   "resources": [
     {
       "type": "Microsoft.Devices/IotHubs",
@@ -54,6 +59,29 @@
         "name": "[parameters('skuName')]",
         "capacity": "[parameters('capacityUnits')]"
       }
+    },
+    {
+      "type": "Microsoft.Devices/provisioningServices",
+      "sku": {
+        "name": "[parameters('skuName')]",
+        "capacity": "[parameters('capacityUnits')]"
+      },
+      "name": "[concat(parameters('iotHubName'),'ProvisioningService')]",
+      "apiVersion": "2017-11-15",
+      "location": "[parameters('location')]",
+      "tags": {},
+      "properties": {
+        "iotHubs": [
+          {
+            "connectionString": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listkeys(variables('iotHubKeyResource'), '2017-07-01').primaryKey)]",
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('iotHubName'),'.azure-devices.net')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[parameters('iotHubName')]"
+      ]
     }
   ]
 }
