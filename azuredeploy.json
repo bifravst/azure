@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "iotHubName": {
@@ -63,13 +63,12 @@
     {
       "type": "Microsoft.Devices/provisioningServices",
       "sku": {
-        "name": "[parameters('skuName')]",
-        "capacity": "[parameters('capacityUnits')]"
+        "name": "S1",
+        "capacity": 1
       },
-      "name": "[concat(parameters('iotHubName'),'ProvisioningService')]",
+      "name": "[concat(parameters('iotHubName'), 'ProvisioningService')]",
       "apiVersion": "2017-11-15",
       "location": "[parameters('location')]",
-      "tags": {},
       "properties": {
         "iotHubs": [
           {
