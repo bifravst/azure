@@ -5,6 +5,9 @@ import { registerCaCommand } from './commands/register-ca'
 import { IotHubClient } from "@azure/arm-iothub";
 import { AzureCliCredentials } from "@azure/ms-rest-nodeauth";
 import { proofPosession } from './commands/proofPosession';
+import { registerDeviceCommand } from './commands/register-device';
+import { connectCommand } from './commands/connect';
+import { run } from './process/run';
 
 const bifravstCLI = async () => {
 	const certsDir = path.resolve(process.cwd(), 'certificates')
@@ -15,8 +18,17 @@ const bifravstCLI = async () => {
 
 	console.log(chalk.yellow('Subscription ID:'), chalk.green(subscription))
 
-
 	const iotClient = new IotHubClient(creds, subscription);
+
+	// FIXME: Use @azure/arm-resource
+	const resourceGroupName = 'bifravst'
+	const deploymentName = 'bifravst'
+	const iotHubConnectionString = await run({
+		command: 'az',
+		args: [
+			'group', 'deployment', 'show', '-g', resourceGroupName, '-n', deploymentName, '--query', 'properties.outputs.ioTHubConnectionString.value'
+		]
+	})
 
 	program.description('Bifravst Command Line Interface')
 
@@ -27,7 +39,16 @@ const bifravstCLI = async () => {
 		}),
 		proofPosession({
 			certsDir,
-			iotClient
+			iotClient,
+			iotHubConnectionString: iotHubConnectionString.replace(/"/g, '')
+		}),
+		registerDeviceCommand({
+			iotClient,
+			certsDir
+		}),
+		connectCommand({
+			iotClient,
+			certsDir
 		})
 	]
 
