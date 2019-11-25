@@ -2,10 +2,10 @@ import { promises as fs } from 'fs'
 import { caFileLocations } from './caFileLocations'
 import { deviceFileLocations } from './deviceFileLocations'
 import { run } from '../process/run'
+import * as os from 'os'
 
 /**
  * Generates a certificate for a device, signed with the CA
- * @see https://docs.aws.amazon.com/iot/latest/developerguide/device-certs-your-own.html
  */
 export const generateDeviceCertificate = async ({
 	certsDir,
@@ -17,7 +17,7 @@ export const generateDeviceCertificate = async ({
 	deviceId: string
 	log?: (...message: any[]) => void
 	debug?: (...message: any[]) => void
-}): Promise<{ deviceId: string, expires: Date }> => {
+}): Promise<{ deviceId: string }> => {
 	try {
 		await fs.stat(certsDir)
 	} catch {
@@ -67,10 +67,17 @@ export const generateDeviceCertificate = async ({
 			`${validityInDays}`,
 			'-sha256',
 			'-out',
-			deviceFiles.publicKey,
+			deviceFiles.cert,
 		],
 		log: debug,
 	})
 
-	return { deviceId, expires: new Date(Date.now() + (validityInDays * 24 * 60 * 60 * 1000)) }
+	const certWithCa = (await Promise.all([
+		fs.readFile(deviceFiles.cert),
+		fs.readFile(caFiles.cert),
+	])).join(os.EOL)
+
+	await fs.writeFile(deviceFiles.certWithCA, certWithCa, 'utf-8')
+
+	return { deviceId }
 }

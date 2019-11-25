@@ -1,15 +1,14 @@
 import chalk from 'chalk'
 import { ComandDefinition } from './CommandDefinition'
 import { generateCA } from '../iot/generateCA'
-import { IotHubClient } from "@azure/arm-iothub";
-import { generateProofOfPosession } from '../iot/generateProofOfPosession';
+import { ProvisioningServiceClient } from 'azure-iot-provisioning-service'
 
 export const registerCaCommand = ({
 	certsDir,
-	iotClient,
+	ioTHubDPSConnectionString,
 }: {
 	certsDir: string
-	iotClient: IotHubClient
+	ioTHubDPSConnectionString: string
 }): ComandDefinition => ({
 	command: 'register-ca',
 	action: async () => {
@@ -31,35 +30,33 @@ export const registerCaCommand = ({
 
 		console.log(certificate)
 
-		const resourceGroupName = 'bifravst'
-		const iotHubName = 'bifravst'
-		const certificateName = `${iotHubName}-devices`
+		const dpsHostname = ioTHubDPSConnectionString.split(';')[0].split('=')[1]
 
-		const iotHubCert = await iotClient.certificates.createOrUpdate(
-			resourceGroupName,
-			iotHubName,
-			certificateName,
-			{
-				certificate,
+		console.log(ioTHubDPSConnectionString)
+
+		const dpsClient = ProvisioningServiceClient.fromConnectionString(ioTHubDPSConnectionString)
+
+		await dpsClient.createOrUpdateEnrollmentGroup({
+			enrollmentGroupId: 'bifravst',
+			attestation: {
+				type: 'x509',
+				//@ts-ignore
+				x509: {
+					signingCertificates: {
+						primary: {
+							certificate
+						}
+					}
+				}
+			},
+			provisioningStatus: "enabled",
+			reprovisionPolicy: {
+				migrateDeviceData: true,
+				updateHubAssignment: true
 			}
-		)
-
-		const cert = await iotClient.certificates.generateVerificationCode(
-			resourceGroupName,
-			iotHubName,
-			certificateName,
-			iotHubCert.etag as string,
-		)
-
-		await generateProofOfPosession({
-			certsDir,
-			log,
-			debug,
-			verificationCode: cert.properties?.verificationCode ?? ''
 		})
 
-		console.log(chalk.magenta(`Added CA certificate to registry`), chalk.blueBright(iotHubName))
-		console.log(chalk.green('You can now proof the posession using'), chalk.yellow(`node cli proof-ca-posession`))
+		console.log(chalk.magenta(`Added CA certificate to Device Provisioning Service`), chalk.blueBright(dpsHostname))
 	},
 	help: 'Creates a CA for devices and adds it to the registry',
 })

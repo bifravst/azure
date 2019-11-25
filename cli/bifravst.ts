@@ -4,7 +4,6 @@ import * as path from 'path'
 import { registerCaCommand } from './commands/register-ca'
 import { IotHubClient } from "@azure/arm-iothub";
 import { AzureCliCredentials } from "@azure/ms-rest-nodeauth";
-import { proofPosession } from './commands/proofPosession';
 import { registerDeviceCommand } from './commands/register-device';
 import { connectCommand } from './commands/connect';
 import { run } from './process/run';
@@ -23,31 +22,26 @@ const bifravstCLI = async () => {
 	// FIXME: Use @azure/arm-resource
 	const resourceGroupName = 'bifravst'
 	const deploymentName = 'bifravst'
-	const iotHubConnectionString = await run({
+	const ioTHubDPSConnectionString = (await run({
 		command: 'az',
 		args: [
-			'group', 'deployment', 'show', '-g', resourceGroupName, '-n', deploymentName, '--query', 'properties.outputs.ioTHubConnectionString.value'
+			'group', 'deployment', 'show', '-g', resourceGroupName, '-n', deploymentName, '--query', 'properties.outputs.ioTHubDPSConnectionString.value'
 		]
-	})
+	})).replace(/"/g, '')
 
 	program.description('Bifravst Command Line Interface')
 
 	const commands = [
 		registerCaCommand({
 			certsDir,
-			iotClient,
-		}),
-		proofPosession({
-			certsDir,
-			iotClient,
-			iotHubConnectionString: iotHubConnectionString.replace(/"/g, '')
+			ioTHubDPSConnectionString,
 		}),
 		registerDeviceCommand({
 			iotClient,
 			certsDir
 		}),
 		connectCommand({
-			iotClient,
+			ioTHubDPSConnectionString,
 			certsDir
 		})
 	]

@@ -3,14 +3,13 @@ import { deviceFileLocations } from '../iot/deviceFileLocations'
 import { Mqtt } from 'azure-iot-device-mqtt'
 import { Client } from 'azure-iot-device'
 import { promises as fs } from 'fs'
-import { IotHubClient } from "@azure/arm-iothub";
 import chalk from 'chalk'
 
 export const connectCommand = ({
-	iotClient,
 	certsDir,
+	ioTHubDPSConnectionString
 }: {
-	iotClient: IotHubClient,
+	ioTHubDPSConnectionString: string
 	certsDir: string
 }): ComandDefinition => ({
 	command: 'connect <deviceId>',
@@ -21,14 +20,13 @@ export const connectCommand = ({
 			deviceId
 		})
 
-		const hub = await iotClient.iotHubResource.get('bifravst', 'bifravst')
-
 		// See https://github.com/Azure/azure-iot-sdk-node/blob/master/device/samples/simple_sample_device.js
-		const connectionString = `HostName=${hub.properties?.hostName};DeviceId=${deviceId};x509=true`
+		const dpsHostname = ioTHubDPSConnectionString.split(';')[0].split('=')[1]
+		const connectionString = `HostName=${dpsHostname};DeviceId=${deviceId};x509=true`
 		console.log(chalk.green(`Connecting to`), chalk.yellow(connectionString))
 		const client = Client.fromConnectionString(connectionString, Mqtt);
 		client.setOptions({
-			cert: (await fs.readFile(certs.publicKey, 'utf-8')).toString(),
+			cert: (await fs.readFile(certs.certWithCA, 'utf-8')).toString(),
 			key: (await fs.readFile(certs.privateKey, 'utf-8')).toString(),
 		});
 
