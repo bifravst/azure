@@ -3,9 +3,10 @@ import { caFileLocations } from './caFileLocations'
 import { run } from '../process/run'
 
 /**
- * Generates a CA certificate
+ * Generates a CA certificate chain
+ * @see https://github.com/Azure/azure-iot-sdk-c/blob/master/tools/CACertificates/CACertificateOverview.md#step-2---create-the-certificate-chain
  */
-export const generateCA = async (args: {
+export const generateCAChain = async (args: {
 	certsDir: string
 	log: (...message: any[]) => void
 	debug: (...message: any[]) => void
@@ -21,22 +22,28 @@ export const generateCA = async (args: {
 
 	let certExists = false
 	try {
-		await fs.stat(caFiles.cert)
+		await fs.stat(caFiles.rootCert)
 		certExists = true
 	} catch {
 		// pass
 	}
 	if (certExists) {
-		throw new Error(`CA Certificate exists: ${caFiles.cert}!`)
+		throw new Error(`CA Certificate exists: ${caFiles.rootCert}!`)
 	}
 
-	// Now generate the CA
+	// Creating the Root CA Private Key
 
 	await run({
 		command: 'openssl',
-		args: ['genpkey', '-algorithm', 'RSA', '-out', caFiles.privateKey, '-pkeyopt', 'rsa_keygen_bits:2048'],
+		args: [
+			'genrsa',
+			'-out', caFiles.rootPrivateKey,
+			'4096'
+		],
 		log: debug,
 	})
+
+	// Creating the Root CA Certificate
 
 	await run({
 		command: 'openssl',
@@ -46,21 +53,74 @@ export const generateCA = async (args: {
 			'-new',
 			'-nodes',
 			'-key',
-			caFiles.privateKey,
+			caFiles.rootPrivateKey,
 			'-sha256',
 			'-days',
 			'365',
 			'-out',
-			caFiles.cert,
+			caFiles.rootCert,
+			'-extension', 'subjectKeyIdentifier = hash',
+			'-extension', 'authorityKeyIdentifier = keyid:always,issuer',
+			'-extension', 'basicConstraints = critical, CA:true',
+			'-extension', 'keyUsage = critical, digitalSignature, cRLSign, keyCertSign',
 			'-subj',
-			'/CN=unused',
+			'/CN=Azure IoT Hub Root CA Cert for Bifravst',
 		],
 		log: debug,
 	})
 
-	log(`Created CA certificate in ${caFiles.cert}`)
+	log(`Created CA root certificate in ${caFiles.rootCert}`)
 
-	const certificate = await fs.readFile(caFiles.cert, 'utf-8')
+	// Creating the Intermediate Device CA
+
+	await run({
+		command: 'openssl',
+		args: [
+			'genrsa',
+			'-out', caFiles.intermediatePrivateKey,
+			'4096'
+		],
+		log: debug,
+	})
+
+	// Creating the Intermediate Device CA CSR
+
+	await run({
+		command: 'openssl',
+		args: [
+			'req',
+			'-new',
+			'-sha256',
+			'-subj',
+			'/CN=Azure IoT Hub Root CA CSR for Bifravst',
+			'-key', caFiles.intermediatePrivateKey,
+			'-out', caFiles.intermediateCSR,
+			'4096'
+		],
+		log: debug,
+	})
+
+	// Signing the Intermediate Certificate with Root CA Cert
+
+	await run({
+		command: 'openssl',
+		args: [
+			'ca',
+			'-batch',
+			'-extension', 'subjectKeyIdentifier = hash',
+			'-extension', 'authorityKeyIdentifier = keyid:always,issuer',
+			'-extension', 'basicConstraints = critical, CA:true',
+			'-extension', 'keyUsage = critical, digitalSignature, cRLSign, keyCertSign',
+			'-days', '365',
+			'-notext',
+			'-md', 'sha256',
+			'-in', caFiles.intermediateCSR,
+			'-out', caFiles.intermediateCert,
+		],
+		log: debug,
+	})
+
+	const certificate = await fs.readFile(caFiles.rootCert, 'utf-8')
 
 	return {
 		certificate
