@@ -1,16 +1,17 @@
 import { promises as fs } from 'fs'
 import { caFileLocations } from './caFileLocations'
-import { run } from '../process/run'
+import { createCertificate, CertificateCreationResult } from 'pem'
 
 /**
  * Generates a CA certificate chain
- * @see https://github.com/Azure/azure-iot-sdk-c/blob/master/tools/CACertificates/CACertificateOverview.md#step-2---create-the-certificate-chain
+ * @see https://github.com/Azure/azure-iot-sdk-node/blob/5a7cd40145575175b4a100bbc84758f8a87c6d37/provisioning/tools/create_test_cert.js
+ * @see http://busbyland.com/azure-iot-device-provisioning-service-via-rest-part-1/
  */
 export const generateCAChain = async (args: {
 	certsDir: string
 	log: (...message: any[]) => void
 	debug: (...message: any[]) => void
-}): Promise<{ certificate: string }> => {
+}): Promise<{ root: CertificateCreationResult, intermediate: CertificateCreationResult }> => {
 	const { certsDir, log, debug } = args
 	const caFiles = caFileLocations(certsDir)
 	try {
@@ -31,98 +32,62 @@ export const generateCAChain = async (args: {
 		throw new Error(`CA Certificate exists: ${caFiles.rootCert}!`)
 	}
 
-	// Creating the Root CA Private Key
+	const config = (commonName: string) => [
+		'[req]',
+		'req_extensions = v3_req',
+		'distinguished_name = req_distinguished_name',
+		'x509_extensions = v3_ca',
+		'[req_distinguished_name]',
+		'commonName = ' + commonName,
+		'[v3_req]',
+		'basicConstraints = critical, CA:true'
+	].join('\n')
 
-	await run({
-		command: 'openssl',
-		args: [
-			'genrsa',
-			'-out', caFiles.rootPrivateKey,
-			'4096'
-		],
-		log: debug,
-	})
+	// Create the Root CA Cert
 
-	// Creating the Root CA Certificate
+	const rootName = 'Bifravst Root CA'
 
-	await run({
-		command: 'openssl',
-		args: [
-			'req',
-			'-x509',
-			'-new',
-			'-nodes',
-			'-key',
-			caFiles.rootPrivateKey,
-			'-sha256',
-			'-days',
-			'365',
-			'-out',
-			caFiles.rootCert,
-			'-extension', 'subjectKeyIdentifier = hash',
-			'-extension', 'authorityKeyIdentifier = keyid:always,issuer',
-			'-extension', 'basicConstraints = critical, CA:true',
-			'-extension', 'keyUsage = critical, digitalSignature, cRLSign, keyCertSign',
-			'-subj',
-			'/CN=Azure IoT Hub Root CA Cert for Bifravst',
-		],
-		log: debug,
-	})
+	const rootCert = await new Promise<CertificateCreationResult>((resolve, reject) => createCertificate({
+		commonName: rootName,
+		serial: Math.floor(Math.random() * 1000000000),
+		days: 365,
+		selfSigned: true,
+		config: config(rootName)
+	}, (err, cert) => {
+		if (err) return reject(err)
+		resolve(cert)
+	}))
 
-	log(`Created CA root certificate in ${caFiles.rootCert}`)
+	await fs.writeFile(caFiles.rootCert, rootCert.certificate);
+	await fs.writeFile(caFiles.rootPrivateKey, rootCert.clientKey);
 
-	// Creating the Intermediate Device CA
+	debug('Root CA Certificate', caFiles.rootCert)
 
-	await run({
-		command: 'openssl',
-		args: [
-			'genrsa',
-			'-out', caFiles.intermediatePrivateKey,
-			'4096'
-		],
-		log: debug,
-	})
+	// Create the intermediate CA cert (signed by the root)
 
-	// Creating the Intermediate Device CA CSR
+	const intermediateName = 'Bifravst Intermediate CA'
 
-	await run({
-		command: 'openssl',
-		args: [
-			'req',
-			'-new',
-			'-sha256',
-			'-subj',
-			'/CN=Azure IoT Hub Root CA CSR for Bifravst',
-			'-key', caFiles.intermediatePrivateKey,
-			'-out', caFiles.intermediateCSR,
-			'4096'
-		],
-		log: debug,
-	})
+	const intermediateCert = await new Promise<CertificateCreationResult>((resolve, reject) => createCertificate({
+		commonName: intermediateName,
+		serial: Math.floor(Math.random() * 1000000000),
+		days: 365,
+		selfSigned: true,
+		config: config(intermediateName),
+		serviceKey: rootCert.clientKey,
+		serviceCertificate: rootCert.certificate
+	}, (err, cert) => {
+		if (err) return reject(err)
+		resolve(cert)
+	}))
 
-	// Signing the Intermediate Certificate with Root CA Cert
+	debug('Intermediate CA Certificate', caFiles.rootCert)
 
-	await run({
-		command: 'openssl',
-		args: [
-			'ca',
-			'-batch',
-			'-extension', 'subjectKeyIdentifier = hash',
-			'-extension', 'authorityKeyIdentifier = keyid:always,issuer',
-			'-extension', 'basicConstraints = critical, CA:true',
-			'-extension', 'keyUsage = critical, digitalSignature, cRLSign, keyCertSign',
-			'-days', '365',
-			'-notext',
-			'-md', 'sha256',
-			'-in', caFiles.intermediateCSR,
-			'-out', caFiles.intermediateCert,
-		],
-		log: debug,
-	})
 
-	const certificate = await fs.readFile(caFiles.rootCert, 'utf-8')
+	await fs.writeFile(caFiles.intermediateCert, intermediateCert.certificate);
+	await fs.writeFile(caFiles.intermediatePrivateKey, intermediateCert.clientKey);
 
 	return {
-		certificate
+		root: rootCert,
+		intermediate: intermediateCert,
 	}
 }

@@ -5,7 +5,6 @@ export const caFileLocations = (certsDir: string) => ({
 	rootPrivateKey: path.resolve(certsDir, 'CA.root.key'),
 	intermediatePrivateKey: path.resolve(certsDir, 'CA.intermediate.key'),
 	intermediateCert: path.resolve(certsDir, 'CA.intermediate.key'),
-	intermediateCSR: path.resolve(certsDir, 'CA.intermediate.csr'),
 	verificationKey: path.resolve(certsDir, 'CA.verification.key'),
 	verificationCSR: path.resolve(certsDir, 'CA.verification.csr'),
 	verificationPEM: path.resolve(certsDir, 'CA.verification.pem'),

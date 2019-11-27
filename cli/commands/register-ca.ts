@@ -1,14 +1,17 @@
 import chalk from 'chalk'
 import { ComandDefinition } from './CommandDefinition'
-import { generateCA } from '../iot/generateCA'
+import { generateCAChain } from '../iot/generateCA'
 import { ProvisioningServiceClient } from 'azure-iot-provisioning-service'
+import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 
 export const registerCaCommand = ({
 	certsDir,
 	ioTHubDPSConnectionString,
+	iotDpsClient,
 }: {
 	certsDir: string
 	ioTHubDPSConnectionString: string
+	iotDpsClient: IotDpsClient
 }): ComandDefinition => ({
 	command: 'register-ca',
 	action: async () => {
@@ -21,14 +24,23 @@ export const registerCaCommand = ({
 			console.log(...message.map(m => chalk.cyan(m)))
 		}
 
-		const { certificate } = await generateCA({
+		const { root, intermediate } = await generateCAChain({
 			certsDir,
 			log,
 			debug
 		})
-		console.log(chalk.magenta(`CA certificate generated.`))
+		console.log(chalk.magenta(`CA root and intermediat certificate generated.`))
 
-		console.log(certificate)
+		await iotDpsClient.dpsCertificate.createOrUpdate(
+			'bifravst',
+			'bifravstProvisioningService',
+			'bifravst-root',
+			{
+				certificate: root.certificate
+			},
+		)
+
+		// TODO: verify
 
 		const dpsHostname = ioTHubDPSConnectionString.split(';')[0].split('=')[1]
 
@@ -44,7 +56,7 @@ export const registerCaCommand = ({
 				x509: {
 					signingCertificates: {
 						primary: {
-							certificate
+							certificate: intermediate.certificate
 						}
 					}
 				}
