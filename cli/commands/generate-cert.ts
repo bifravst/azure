@@ -4,13 +4,13 @@ import { randomWords } from '@bifravst/random-words'
 import { generateDeviceCertificate } from '../iot/generateDeviceCertificate'
 import { IotHubClient } from "@azure/arm-iothub";
 
-export const registerDeviceCommand = ({
+export const generateDeviceCommand = ({
 	certsDir,
 }: {
-	iotClient: IotHubClient,
+	iotClient: () => Promise<IotHubClient>,
 	certsDir: string
 }): ComandDefinition => ({
-	command: 'register-device',
+	command: 'generate-cert',
 	options: [
 		{
 			flags: '-d, --deviceId <deviceId>',
@@ -31,10 +31,10 @@ export const registerDeviceCommand = ({
 			},
 		})
 		console.log(
-			chalk.green(`Certificate for device ${chalk.yellow(id)} generated.`),
+			chalk.magenta(`Certificate for device ${chalk.yellow(id)} generated.`),
 		)
 
-		console.log(chalk.green('You can now connect to the broker.'))
+		console.log(chalk.green('You can now connect to the broker using'), chalk.blueBright(`node cli connect ${id}`))
 	},
 	help: 'Generate a device certificate and register a device in the registry.',
 })

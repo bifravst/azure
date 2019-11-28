@@ -3,45 +3,65 @@ import chalk from 'chalk'
 import * as path from 'path'
 import { registerCaCommand } from './commands/register-ca'
 import { IotHubClient } from "@azure/arm-iothub";
+import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from "@azure/ms-rest-nodeauth";
-import { registerDeviceCommand } from './commands/register-device';
+import { generateDeviceCommand } from './commands/generate-cert';
 import { connectCommand } from './commands/connect';
 import { run } from './process/run';
+import { proofCaPossessionCommand } from './commands/proof-ca-possession';
 
-const bifravstCLI = async () => {
-	const certsDir = path.resolve(process.cwd(), 'certificates')
+const ioTHubDPSConnectionString = ({ deploymentName, resourceGroupName }: { deploymentName: string, resourceGroupName: string }) => async () => (await run({
+	command: 'az',
+	args: [
+		'group', 'deployment', 'show', '-g', resourceGroupName, '-n', deploymentName, '--query', 'properties.outputs.ioTHubDPSConnectionString.value'
+	]
+})).replace(/"/g, '')
 
+const creds = async () => {
 	const creds = await AzureCliCredentials.create();
 
 	const { tokenInfo: { subscription } } = creds
 
-	console.log(chalk.yellow('Subscription ID:'), chalk.green(subscription))
+	console.log(chalk.magenta('Subscription ID:'), chalk.yellow(subscription))
 
-	const iotClient = new IotHubClient(creds, subscription);
+	return creds
+}
 
-	// FIXME: Use @azure/arm-resource
+let currentCreds: Promise<AzureCliCredentials>;
+
+const getCurrentCreds = () => {
+	if (!currentCreds) currentCreds = creds()
+	return currentCreds
+}
+
+const bifravstCLI = async () => {
+	const certsDir = path.resolve(process.cwd(), 'certificates')
+
 	const resourceGroupName = 'bifravst'
 	const deploymentName = 'bifravst'
-	const ioTHubDPSConnectionString = (await run({
-		command: 'az',
-		args: [
-			'group', 'deployment', 'show', '-g', resourceGroupName, '-n', deploymentName, '--query', 'properties.outputs.ioTHubDPSConnectionString.value'
-		]
-	})).replace(/"/g, '')
+
+	const getIotHubConnectionString = ioTHubDPSConnectionString({ resourceGroupName, deploymentName })
+	const getIotDpsClient = () => getCurrentCreds().then(creds => new IotDpsClient(creds, creds.tokenInfo.subscription))
+	const getIotClient = () => getCurrentCreds().then(creds => new IotHubClient(creds, creds.tokenInfo.subscription))
 
 	program.description('Bifravst Command Line Interface')
 
 	const commands = [
 		registerCaCommand({
 			certsDir,
-			ioTHubDPSConnectionString,
+			ioTHubDPSConnectionString: getIotHubConnectionString,
+			iotDpsClient: getIotDpsClient,
 		}),
-		registerDeviceCommand({
-			iotClient,
+		generateDeviceCommand({
+			iotClient: getIotClient,
 			certsDir
 		}),
 		connectCommand({
-			ioTHubDPSConnectionString,
+			iotDpsClient: getIotDpsClient,
+			certsDir
+		}),
+		proofCaPossessionCommand({
+			iotDpsClient: getIotDpsClient,
 			certsDir
 		})
 	]

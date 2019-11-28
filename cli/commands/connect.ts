@@ -1,49 +1,94 @@
 import { ComandDefinition } from './CommandDefinition'
 import { deviceFileLocations } from '../iot/deviceFileLocations'
-import { Mqtt } from 'azure-iot-device-mqtt'
-import { Client } from 'azure-iot-device'
 import { promises as fs } from 'fs'
 import chalk from 'chalk'
+import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
+import { Mqtt as MqttProvisioning } from 'azure-iot-provisioning-device-mqtt'
+import { Mqtt as MqttDevice } from 'azure-iot-device-mqtt'
+import { X509Security } from 'azure-iot-security-x509'
+import { ProvisioningDeviceClient } from 'azure-iot-provisioning-device'
+import { Client } from 'azure-iot-device'
 
 export const connectCommand = ({
 	certsDir,
-	ioTHubDPSConnectionString
+	iotDpsClient
 }: {
-	ioTHubDPSConnectionString: string
+	iotDpsClient: () => Promise<IotDpsClient>
 	certsDir: string
 }): ComandDefinition => ({
 	command: 'connect <deviceId>',
 	action: async (deviceId: string) => {
 
-		const certs = deviceFileLocations({
+		const deviceFiles = deviceFileLocations({
 			certsDir,
 			deviceId
 		})
 
-		// See https://github.com/Azure/azure-iot-sdk-node/blob/master/device/samples/simple_sample_device.js
-		const dpsHostname = ioTHubDPSConnectionString.split(';')[0].split('=')[1]
-		const connectionString = `HostName=${dpsHostname};DeviceId=${deviceId};x509=true`
-		console.log(chalk.green(`Connecting to`), chalk.yellow(connectionString))
-		const client = Client.fromConnectionString(connectionString, Mqtt);
-		client.setOptions({
-			cert: (await fs.readFile(certs.certWithCA, 'utf-8')).toString(),
-			key: (await fs.readFile(certs.privateKey, 'utf-8')).toString(),
-		});
+		const cert = {
+			cert: await fs.readFile(deviceFiles.certWithChain, 'utf-8'),
+			key: await fs.readFile(deviceFiles.privateKey, 'utf-8'),
+		}
 
-		client.open(err => {
-			if (err) {
-				throw new Error('Could not connect: ' + err.message)
-			}
-			console.log('Client connected');
-			client.on('error', (err) => {
-				console.error(err.message);
+		let iotHub
+
+		try {
+			const registry = JSON.parse(await fs.readFile(deviceFiles.registry,
+				'utf-8'))
+			iotHub = registry.iotHub
+		} catch {
+			const armDpsClient = await iotDpsClient()
+
+			// See https://github.com/Azure/azure-iot-sdk-node/blob/master/device/samples/simple_sample_device.js
+			const dps = await armDpsClient.iotDpsResource.get('bifravstProvisioningService', 'bifravst')
+			const dpsHostname = dps.properties.serviceOperationsHostName as string
+			const idScope = dps.properties.idScope as string
+			console.log(chalk.magenta(`Connecting to`), chalk.yellow(dpsHostname))
+			console.log(chalk.magenta(`ID scope`), chalk.yellow(idScope))
+
+			const deviceClient = ProvisioningDeviceClient.create(dpsHostname, idScope, new MqttProvisioning(), new X509Security(deviceId, cert));
+
+			// Register the device.  Do not force a re-registration.
+			const registry = await new Promise<{ iotHub: string }>((resolve, reject) => deviceClient.register((err, result) => {
+				if (err) {
+					return reject("error registering device: " + err)
+				}
+				if (!result) {
+					return reject("Received no registration result!")
+				}
+				resolve({
+					iotHub: result.assignedHub
+				})
+			}))
+
+			console.log(chalk.magenta(`Device registration succeeded with IotHub`), chalk.yellow(iotHub))
+
+			await fs.writeFile(deviceFiles.registry, JSON.stringify(registry, null, 2), 'utf-8')
+			iotHub = registry.iotHub
+		} finally {
+			const connection = Client.fromConnectionString(`HostName=${iotHub};DeviceId=${deviceId};x509=true`, MqttDevice);
+
+			connection.setOptions(cert);
+			connection.open(err => {
+				if (err) {
+					console.error('Could not connect: ' + err.message);
+					return
+				}
+
+				console.log(chalk.green('Device connected'), chalk.blueBright(deviceId))
+
+				connection.on('message', msg => {
+					console.log('Id: ' + msg.messageId + ' Body: ' + msg.data);
+				});
+
+				connection.on('error', err => {
+					console.error(err.message);
+				});
+
+				connection.on('disconnect', () => {
+					connection.removeAllListeners();
+				});
 			});
-
-			client.on('disconnect', () => {
-				client.removeAllListeners();
-			});
-
-		})
+		}
 	},
 	help: 'Connect to the IoT Hub',
 })

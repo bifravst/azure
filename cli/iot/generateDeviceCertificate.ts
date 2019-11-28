@@ -1,8 +1,8 @@
 import { promises as fs } from 'fs'
 import { caFileLocations } from './caFileLocations'
 import { deviceFileLocations } from './deviceFileLocations'
-import { run } from '../process/run'
 import * as os from 'os'
+import { createCertificate, CertificateCreationResult } from 'pem'
 
 /**
  * Generates a certificate for a device, signed with the CA
@@ -31,53 +31,59 @@ export const generateDeviceCertificate = async ({
 		deviceId,
 	})
 
-	// Create a device private key
-	await run({
-		command: 'openssl',
-		args: [
-			'genpkey', '-algorithm', 'RSA', '-out', deviceFiles.privateKey, '-pkeyopt', 'rsa_keygen_bits:2048'
-		],
-		log: debug,
+	const [
+		intermediatePrivateKey,
+		intermediateCert
+	] = await Promise.all([
+		fs.readFile(caFiles.intermediatePrivateKey, 'utf-8'),
+		fs.readFile(caFiles.intermediateCert, 'utf-8'),
+	])
+
+	console.log({
+		intermediatePrivateKey,
+		intermediateCert
 	})
 
-	// Create a CSR from the device private key
-	await run({
-		command: 'openssl',
-		args: [
-			'req', '-new', '-sha256', '-key', deviceFiles.privateKey, '-out', deviceFiles.csr, '-subj', '/CN=unused-device'
-		],
-		log: debug,
-	})
+	const deviceCert = await new Promise<CertificateCreationResult>((resolve, reject) => createCertificate({
+		commonName: deviceId,
+		serial: Math.floor(Math.random() * 1000000000),
+		days: 365,
+		selfSigned: true,
+		config: [
+			'[req]',
+			'req_extensions = v3_req',
+			'distinguished_name = req_distinguished_name',
+			'[req_distinguished_name]',
+			'commonName = ' + deviceId,
+			'[v3_req]',
+			'extendedKeyUsage = critical,clientAuth'
+		].join('\n'),
+		serviceKey: intermediatePrivateKey,
+		serviceCertificate: intermediateCert
+	}, (err, cert) => {
+		if (err) return reject(err)
+		resolve(cert)
+	}))
 
-	// Create a public key and sign it with the CA private key. 
-	const validityInDays = 10950
-	await run({
-		command: 'openssl',
-		args: [
-			'x509',
-			'-req',
-			'-in',
-			deviceFiles.csr,
-			'-CAkey',
-			caFiles.privateKey,
-			'-CA',
-			caFiles.cert,
-			'-CAcreateserial',
-			'-days',
-			`${validityInDays}`,
-			'-sha256',
-			'-out',
-			deviceFiles.cert,
-		],
-		log: debug,
-	})
+	debug && debug(deviceCert.certificate)
 
-	const certWithCa = (await Promise.all([
-		fs.readFile(deviceFiles.cert),
-		fs.readFile(caFiles.cert),
+	const certWithChain = (await Promise.all([
+		deviceCert.certificate,
+		intermediateCert,
+		fs.readFile(caFiles.rootCert, 'utf-8'),
 	])).join(os.EOL)
 
-	await fs.writeFile(deviceFiles.certWithCA, certWithCa, 'utf-8')
+	await Promise.all([
+		fs.writeFile(deviceFiles.certWithChain, certWithChain, 'utf-8').then(() => {
+			debug && debug(`${deviceFiles.certWithChain} written`)
+		}),
+		fs.writeFile(deviceFiles.privateKey, deviceCert.clientKey, 'utf-8').then(() => {
+			debug && debug(`${deviceFiles.privateKey} written`)
+		}),
+		fs.writeFile(deviceFiles.cert, deviceCert.certificate, 'utf-8').then(() => {
+			debug && debug(`${deviceFiles.cert} written`)
+		})
+	])
 
 	return { deviceId }
 }

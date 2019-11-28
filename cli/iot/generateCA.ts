@@ -18,7 +18,7 @@ export const generateCAChain = async (args: {
 		await fs.stat(certsDir)
 	} catch {
 		await fs.mkdir(certsDir)
-		log(`Created ${certsDir}`)
+		debug(`Created ${certsDir}`)
 	}
 
 	let certExists = false
@@ -61,7 +61,8 @@ export const generateCAChain = async (args: {
 	await fs.writeFile(caFiles.rootCert, rootCert.certificate);
 	await fs.writeFile(caFiles.rootPrivateKey, rootCert.clientKey);
 
-	debug('Root CA Certificate', caFiles.rootCert)
+	log('Root CA Certificate', caFiles.rootCert)
+	debug(rootCert.certificate)
 
 	// Create the intermediate CA cert (signed by the root)
 
@@ -80,8 +81,8 @@ export const generateCAChain = async (args: {
 		resolve(cert)
 	}))
 
-	debug('Intermediate CA Certificate', caFiles.rootCert)
-
+	log('Intermediate CA Certificate', caFiles.intermediateCert)
+	debug(intermediateCert.certificate)
 
 	await fs.writeFile(caFiles.intermediateCert, intermediateCert.certificate);
 	await fs.writeFile(caFiles.intermediatePrivateKey, intermediateCert.clientKey);

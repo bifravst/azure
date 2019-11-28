@@ -3,6 +3,7 @@ import { ComandDefinition } from './CommandDefinition'
 import { generateCAChain } from '../iot/generateCA'
 import { ProvisioningServiceClient } from 'azure-iot-provisioning-service'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
+import { generateProofOfPosession } from '../iot/generateProofOfPosession'
 
 export const registerCaCommand = ({
 	certsDir,
@@ -10,8 +11,8 @@ export const registerCaCommand = ({
 	iotDpsClient,
 }: {
 	certsDir: string
-	ioTHubDPSConnectionString: string
-	iotDpsClient: IotDpsClient
+	ioTHubDPSConnectionString: () => Promise<string>
+	iotDpsClient: () => Promise<IotDpsClient>
 }): ComandDefinition => ({
 	command: 'register-ca',
 	action: async () => {
@@ -29,27 +30,68 @@ export const registerCaCommand = ({
 			log,
 			debug
 		})
-		console.log(chalk.magenta(`CA root and intermediat certificate generated.`))
+		console.log(chalk.magenta(`CA root and intermediate certificate generated.`))
 
-		await iotDpsClient.dpsCertificate.createOrUpdate(
-			'bifravst',
-			'bifravstProvisioningService',
-			'bifravst-root',
+		// Register root CA certificate on DPS
+
+		const certificateName = 'bifravst-root'
+		const resourceGroupName = 'bifravst'
+		const dpsName = 'bifravstProvisioningService'
+
+		const armDpsClient = await iotDpsClient()
+
+		await armDpsClient.dpsCertificate.createOrUpdate(
+			resourceGroupName,
+			dpsName,
+			certificateName,
 			{
 				certificate: root.certificate
 			},
 		)
 
-		// TODO: verify
+		console.log(
+			chalk.magenta(`CA root registered with DPS.`),
+			chalk.yellow(dpsName)
+		)
 
-		const dpsHostname = ioTHubDPSConnectionString.split(';')[0].split('=')[1]
+		// Create verification cert
 
-		console.log(ioTHubDPSConnectionString)
+		const { etag } = await armDpsClient.dpsCertificate.get(certificateName, resourceGroupName, dpsName)
+		const { properties } = await armDpsClient.dpsCertificate.generateVerificationCode(
+			certificateName,
+			etag as string,
+			resourceGroupName,
+			dpsName
+		)
 
-		const dpsClient = ProvisioningServiceClient.fromConnectionString(ioTHubDPSConnectionString)
+		if (!properties?.verificationCode) {
+			throw new Error(`Failed to generate verification code`)
+		}
+
+		await generateProofOfPosession({
+			certsDir,
+			log,
+			debug,
+			verificationCode: properties.verificationCode
+		})
+
+		console.log(
+			chalk.magenta(`Generated verification certificate for verification code`),
+			chalk.yellow(properties.verificationCode)
+		)
+
+		// Create enrollment group
+
+		const dpsConnString = await ioTHubDPSConnectionString()
+
+		const dpsHostname = dpsConnString.split(';')[0].split('=')[1]
+
+		const dpsClient = ProvisioningServiceClient.fromConnectionString(dpsConnString)
+
+		const enrollmentGroupId = 'bifravst'
 
 		await dpsClient.createOrUpdateEnrollmentGroup({
-			enrollmentGroupId: 'bifravst',
+			enrollmentGroupId,
 			attestation: {
 				type: 'x509',
 				//@ts-ignore
@@ -68,7 +110,16 @@ export const registerCaCommand = ({
 			}
 		})
 
-		console.log(chalk.magenta(`Added CA certificate to Device Provisioning Service`), chalk.blueBright(dpsHostname))
+		console.log(
+			chalk.magenta(`Created enrollment group for intermediate CA cert.`),
+			chalk.yellow(enrollmentGroupId)
+		)
+
+		console.log(chalk.magenta(`Added CA certificate to Device Provisioning Service`), chalk.yellow(dpsHostname))
+
+		console.log()
+
+		console.log(chalk.green('You can now verify the proof of posession using'), chalk.blueBright('node cli proof-ca-possession'))
 	},
 	help: 'Creates a CA for devices and adds it to the registry',
 })
