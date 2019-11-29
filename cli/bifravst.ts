@@ -1,14 +1,16 @@
 import * as program from 'commander'
 import chalk from 'chalk'
 import * as path from 'path'
-import { registerCaCommand } from './commands/register-ca'
+import { registerCARootCommand } from './commands/register-ca-root'
 import { IotHubClient } from "@azure/arm-iothub";
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from "@azure/ms-rest-nodeauth";
-import { generateDeviceCommand } from './commands/generate-cert';
+import { generateDeviceCommand } from './commands/generate-device-cert';
 import { connectCommand } from './commands/connect';
 import { run } from './process/run';
-import { proofCaPossessionCommand } from './commands/proof-ca-possession';
+import { proofCARootPossessionCommand } from './commands/proof-ca-possession';
+import { registerCAIntermediateCommand } from './commands/register-ca-intermediate';
+import { iotDeviceProvisioningServiceName, resourceGroupName, deploymentName } from '../arm/resources';
 
 const ioTHubDPSConnectionString = ({ deploymentName, resourceGroupName }: { deploymentName: string, resourceGroupName: string }) => async () => (await run({
 	command: 'az',
@@ -37,20 +39,33 @@ const getCurrentCreds = () => {
 const bifravstCLI = async () => {
 	const certsDir = path.resolve(process.cwd(), 'certificates')
 
-	const resourceGroupName = 'bifravst'
-	const deploymentName = 'bifravst'
+	const resourceGroup = resourceGroupName()
+	const deployment = deploymentName()
+	const dpsName = iotDeviceProvisioningServiceName()
 
-	const getIotHubConnectionString = ioTHubDPSConnectionString({ resourceGroupName, deploymentName })
+	const getIotHubConnectionString = ioTHubDPSConnectionString({ resourceGroupName: resourceGroup, deploymentName: deployment })
 	const getIotDpsClient = () => getCurrentCreds().then(creds => new IotDpsClient(creds, creds.tokenInfo.subscription))
 	const getIotClient = () => getCurrentCreds().then(creds => new IotHubClient(creds, creds.tokenInfo.subscription))
 
 	program.description('Bifravst Command Line Interface')
 
 	const commands = [
-		registerCaCommand({
+		registerCARootCommand({
+			certsDir,
+			iotDpsClient: getIotDpsClient,
+			dpsName,
+			resourceGroup
+		}),
+		proofCARootPossessionCommand({
+			iotDpsClient: getIotDpsClient,
+			certsDir,
+			dpsName,
+			resourceGroup
+		}),
+		registerCAIntermediateCommand({
 			certsDir,
 			ioTHubDPSConnectionString: getIotHubConnectionString,
-			iotDpsClient: getIotDpsClient,
+			iotDpsClient: getIotDpsClient
 		}),
 		generateDeviceCommand({
 			iotClient: getIotClient,
@@ -60,10 +75,6 @@ const bifravstCLI = async () => {
 			iotDpsClient: getIotDpsClient,
 			certsDir
 		}),
-		proofCaPossessionCommand({
-			iotDpsClient: getIotDpsClient,
-			certsDir
-		})
 	]
 
 	let ran = false

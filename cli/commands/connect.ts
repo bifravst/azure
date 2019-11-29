@@ -60,10 +60,11 @@ export const connectCommand = ({
 				})
 			}))
 
+			iotHub = registry.iotHub
+
 			console.log(chalk.magenta(`Device registration succeeded with IotHub`), chalk.yellow(iotHub))
 
 			await fs.writeFile(deviceFiles.registry, JSON.stringify(registry, null, 2), 'utf-8')
-			iotHub = registry.iotHub
 		} finally {
 			const connection = Client.fromConnectionString(`HostName=${iotHub};DeviceId=${deviceId};x509=true`, MqttDevice);
 

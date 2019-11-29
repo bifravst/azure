@@ -1,8 +1,9 @@
 import { promises as fs } from 'fs'
-import { caFileLocations } from './caFileLocations'
+import { CARootFileLocations, CAIntermediateFileLocations } from './caFileLocations'
 import { deviceFileLocations } from './deviceFileLocations'
 import * as os from 'os'
 import { createCertificate, CertificateCreationResult } from 'pem'
+import { leafCertConfig } from './pemConfig'
 
 /**
  * Generates a certificate for a device, signed with the CA
@@ -12,20 +13,17 @@ export const generateDeviceCertificate = async ({
 	log,
 	debug,
 	deviceId,
+	intermediateCertId,
 }: {
 	certsDir: string
 	deviceId: string
+	intermediateCertId: string
 	log?: (...message: any[]) => void
 	debug?: (...message: any[]) => void
 }): Promise<{ deviceId: string }> => {
-	try {
-		await fs.stat(certsDir)
-	} catch {
-		throw new Error(`${certsDir} does not exist.`)
-	}
-
 	log && log(`Generating certificate for device ${deviceId}`)
-	const caFiles = caFileLocations(certsDir)
+	const caRootFiles = CARootFileLocations(certsDir)
+	const caIntermediateFiles = CAIntermediateFileLocations({ certsDir, id: intermediateCertId })
 	const deviceFiles = deviceFileLocations({
 		certsDir,
 		deviceId,
@@ -33,31 +31,19 @@ export const generateDeviceCertificate = async ({
 
 	const [
 		intermediatePrivateKey,
-		intermediateCert
+		intermediateCert,
+		rootCert
 	] = await Promise.all([
-		fs.readFile(caFiles.intermediatePrivateKey, 'utf-8'),
-		fs.readFile(caFiles.intermediateCert, 'utf-8'),
+		fs.readFile(caIntermediateFiles.privateKey, 'utf-8'),
+		fs.readFile(caIntermediateFiles.cert, 'utf-8'),
+		fs.readFile(caRootFiles.cert, 'utf-8')
 	])
-
-	console.log({
-		intermediatePrivateKey,
-		intermediateCert
-	})
 
 	const deviceCert = await new Promise<CertificateCreationResult>((resolve, reject) => createCertificate({
 		commonName: deviceId,
 		serial: Math.floor(Math.random() * 1000000000),
 		days: 365,
-		selfSigned: true,
-		config: [
-			'[req]',
-			'req_extensions = v3_req',
-			'distinguished_name = req_distinguished_name',
-			'[req_distinguished_name]',
-			'commonName = ' + deviceId,
-			'[v3_req]',
-			'extendedKeyUsage = critical,clientAuth'
-		].join('\n'),
+		config: leafCertConfig(deviceId),
 		serviceKey: intermediatePrivateKey,
 		serviceCertificate: intermediateCert
 	}, (err, cert) => {
@@ -70,7 +56,7 @@ export const generateDeviceCertificate = async ({
 	const certWithChain = (await Promise.all([
 		deviceCert.certificate,
 		intermediateCert,
-		fs.readFile(caFiles.rootCert, 'utf-8'),
+		rootCert,
 	])).join(os.EOL)
 
 	await Promise.all([

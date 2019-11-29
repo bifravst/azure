@@ -3,6 +3,8 @@ import { ComandDefinition } from './CommandDefinition'
 import { randomWords } from '@bifravst/random-words'
 import { generateDeviceCertificate } from '../iot/generateDeviceCertificate'
 import { IotHubClient } from "@azure/arm-iothub";
+import { log, debug } from '../logging'
+import { list as listIntermediateCerts } from '../iot/intermediateRegistry'
 
 export const generateDeviceCommand = ({
 	certsDir,
@@ -10,25 +12,34 @@ export const generateDeviceCommand = ({
 	iotClient: () => Promise<IotHubClient>,
 	certsDir: string
 }): ComandDefinition => ({
-	command: 'generate-cert',
+	command: 'generate-device-cert',
 	options: [
 		{
 			flags: '-d, --deviceId <deviceId>',
 			description: 'Device ID, if left blank a random ID will be generated',
 		},
+		{
+			flags: '-i, --intermediateCertId <intermediateCertId>',
+			description: 'ID of the CA intermediate certificate to use, if left blank the first will be used',
+		},
 	],
-	action: async ({ deviceId }: { deviceId: string }) => {
+	action: async ({ deviceId, intermediateCertId }: { deviceId: string, intermediateCertId: string }) => {
 		const id = deviceId || (await randomWords({ numWords: 3 })).join('-')
+
+		if (!intermediateCertId) {
+			const intermediateCerts = await listIntermediateCerts({ certsDir })
+			intermediateCertId = intermediateCerts[0]
+		}
+
+		console.log(chalk.magenta('Intermediate certificate:'), chalk.yellow(intermediateCertId))
 
 		await generateDeviceCertificate({
 			deviceId: id,
 			certsDir,
-			log: (...message: any[]) => {
-				console.log(...message.map(m => chalk.magenta(m)))
-			},
-			debug: (...message: any[]) => {
-				console.log(...message.map(m => chalk.cyan(m)))
-			},
+			log,
+			debug,
+			intermediateCertId
+
 		})
 		console.log(
 			chalk.magenta(`Certificate for device ${chalk.yellow(id)} generated.`),

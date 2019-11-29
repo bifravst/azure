@@ -1,10 +1,20 @@
 import * as path from 'path'
 
-export const caFileLocations = (certsDir: string) => ({
-	rootCert: path.resolve(certsDir, 'CA.root.pem'),
-	rootPrivateKey: path.resolve(certsDir, 'CA.root.key'),
-	intermediatePrivateKey: path.resolve(certsDir, 'CA.intermediate.key'),
-	intermediateCert: path.resolve(certsDir, 'CA.intermediate.pem'),
+export const CARootFileLocations = (certsDir: string) => ({
+	name: path.resolve(certsDir, 'CA.root.name'),
+	cert: path.resolve(certsDir, 'CA.root.pem'),
+	privateKey: path.resolve(certsDir, 'CA.root.key'),
 	verificationKey: path.resolve(certsDir, 'CA.verification.key'),
 	verificationCert: path.resolve(certsDir, 'CA.verification.pem'),
+})
+
+export const CAIntermediateFileLocations = ({
+	certsDir,
+	id
+}: {
+	certsDir: string,
+	id: string
+}) => ({
+	privateKey: path.resolve(certsDir, `CA.intermediate.${id}.key`),
+	cert: path.resolve(certsDir, `CA.intermediate.${id}.pem`),
 })

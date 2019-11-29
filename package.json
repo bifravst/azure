@@ -36,7 +36,8 @@
     "azure-iot-security-x509": "^1.6.0",
     "azure-iothub": "^1.11.0",
     "deepmerge": "^4.1.1",
-    "mqtt": "^3.0.0"
+    "mqtt": "^3.0.0",
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "@azure/arm-deviceprovisioningservices": "^2.1.0",
@@ -46,6 +47,7 @@
     "@types/jsonwebtoken": "^8.3.4",
     "@types/node": "^12.12.14",
     "@types/pem": "^1.9.5",
+    "@types/uuid": "^3.4.6",
     "check-node-version": "^4.0.1",
     "husky": "^3.0.9",
     "pem": "^1.14.3",

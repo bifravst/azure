@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs'
-import { caFileLocations } from './caFileLocations'
+import { CARootFileLocations } from './caFileLocations'
 import { createCertificate, CertificateCreationResult } from 'pem'
+import { leafCertConfig } from './pemConfig'
 
 /**
  * Verifies the CA posessions
@@ -14,29 +15,21 @@ export const generateProofOfPosession = async (args: {
 	debug: (...message: any[]) => void
 }): Promise<{ verification: CertificateCreationResult, }> => {
 	const { certsDir, log, debug, verificationCode } = args
-	const caFiles = caFileLocations(certsDir)
+	const caFiles = CARootFileLocations(certsDir)
 
 	const [
 		rootKey,
 		rootCert
 	] = await Promise.all([
-		fs.readFile(caFiles.rootPrivateKey, 'utf-8'),
-		fs.readFile(caFiles.rootCert, 'utf-8'),
+		fs.readFile(caFiles.privateKey, 'utf-8'),
+		fs.readFile(caFiles.cert, 'utf-8'),
 	])
 
 	const verificationCert = await new Promise<CertificateCreationResult>((resolve, reject) => createCertificate({
 		commonName: verificationCode,
 		serial: Math.floor(Math.random() * 1000000000),
 		days: 1,
-		config: [
-			'[req]',
-			'req_extensions = v3_req',
-			'distinguished_name = req_distinguished_name',
-			'[req_distinguished_name]',
-			'commonName = ' + verificationCode,
-			'[v3_req]',
-			'extendedKeyUsage = critical,clientAuth'
-		].join('\n'),
+		config: leafCertConfig(verificationCode),
 		serviceKey: rootKey,
 		serviceCertificate: rootCert
 	}, (err, cert) => {
