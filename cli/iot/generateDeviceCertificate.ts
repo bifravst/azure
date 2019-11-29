@@ -68,7 +68,10 @@ export const generateDeviceCertificate = async ({
 		}),
 		fs.writeFile(deviceFiles.cert, deviceCert.certificate, 'utf-8').then(() => {
 			debug && debug(`${deviceFiles.cert} written`)
-		})
+		}),
+		fs.writeFile(deviceFiles.intermediateCertId, intermediateCertId, 'utf-8').then(() => {
+			debug && debug(`${deviceFiles.intermediateCertId} written`)
+		}),
 	])
 
 	return { deviceId }

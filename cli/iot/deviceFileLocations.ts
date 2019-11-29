@@ -10,5 +10,6 @@ export const deviceFileLocations = ({
 	privateKey: path.resolve(certsDir, `device-${deviceId}.key`),
 	cert: path.resolve(certsDir, `device-${deviceId}.pem`),
 	certWithChain: path.resolve(certsDir, `device-${deviceId}.bundle.pem`),
-	registry: path.resolve(certsDir, `device-${deviceId}.registry.json`),
+	registration: path.resolve(certsDir, `device-${deviceId}.registration.json`),
+	intermediateCertId: path.resolve(certsDir, `device-${deviceId}.intermediateCertId`),
 })
