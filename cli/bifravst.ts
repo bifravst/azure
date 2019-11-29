@@ -5,7 +5,7 @@ import { createCARootCommand } from './commands/create-ca-root'
 import { IotHubClient } from "@azure/arm-iothub";
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from "@azure/ms-rest-nodeauth";
-import { generateDeviceCommand } from './commands/generate-device-cert';
+import { createDeviceCertCommand } from './commands/create-device-cert';
 import { connectCommand } from './commands/connect';
 import { run } from './process/run';
 import { proofCARootPossessionCommand } from './commands/proof-ca-possession';
@@ -67,7 +67,7 @@ const bifravstCLI = async () => {
 			ioTHubDPSConnectionString: getIotHubConnectionString,
 			iotDpsClient: getIotDpsClient
 		}),
-		generateDeviceCommand({
+		createDeviceCertCommand({
 			iotClient: getIotClient,
 			certsDir
 		}),

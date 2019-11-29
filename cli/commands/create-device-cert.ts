@@ -6,13 +6,13 @@ import { IotHubClient } from "@azure/arm-iothub";
 import { log, debug } from '../logging'
 import { list as listIntermediateCerts } from '../iot/intermediateRegistry'
 
-export const generateDeviceCommand = ({
+export const createDeviceCertCommand = ({
 	certsDir,
 }: {
 	iotClient: () => Promise<IotHubClient>,
 	certsDir: string
 }): ComandDefinition => ({
-	command: 'generate-device-cert',
+	command: 'create-device-cert',
 	options: [
 		{
 			flags: '-d, --deviceId <deviceId>',
