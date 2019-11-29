@@ -7,7 +7,7 @@ import { add as addToIntermediateRegistry } from '../iot/intermediateRegistry'
 import { v4 } from 'uuid'
 import { log, debug } from '../logging'
 
-export const registerCAIntermediateCommand = ({
+export const createCAIntermediateCommand = ({
 	certsDir,
 	ioTHubDPSConnectionString,
 }: {
@@ -15,7 +15,7 @@ export const registerCAIntermediateCommand = ({
 	ioTHubDPSConnectionString: () => Promise<string>
 	iotDpsClient: () => Promise<IotDpsClient>
 }): ComandDefinition => ({
-	command: 'register-ca-intermediate',
+	command: 'create-ca-intermediate',
 	action: async () => {
 
 		const id = v4()

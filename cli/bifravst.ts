@@ -1,7 +1,7 @@
 import * as program from 'commander'
 import chalk from 'chalk'
 import * as path from 'path'
-import { registerCARootCommand } from './commands/register-ca-root'
+import { createCARootCommand } from './commands/create-ca-root'
 import { IotHubClient } from "@azure/arm-iothub";
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from "@azure/ms-rest-nodeauth";
@@ -9,7 +9,7 @@ import { generateDeviceCommand } from './commands/generate-device-cert';
 import { connectCommand } from './commands/connect';
 import { run } from './process/run';
 import { proofCARootPossessionCommand } from './commands/proof-ca-possession';
-import { registerCAIntermediateCommand } from './commands/register-ca-intermediate';
+import { createCAIntermediateCommand } from './commands/create-ca-intermediate';
 import { iotDeviceProvisioningServiceName, resourceGroupName, deploymentName } from '../arm/resources';
 
 const ioTHubDPSConnectionString = ({ deploymentName, resourceGroupName }: { deploymentName: string, resourceGroupName: string }) => async () => (await run({
@@ -50,7 +50,7 @@ const bifravstCLI = async () => {
 	program.description('Bifravst Command Line Interface')
 
 	const commands = [
-		registerCARootCommand({
+		createCARootCommand({
 			certsDir,
 			iotDpsClient: getIotDpsClient,
 			dpsName,
@@ -62,7 +62,7 @@ const bifravstCLI = async () => {
 			dpsName,
 			resourceGroup
 		}),
-		registerCAIntermediateCommand({
+		createCAIntermediateCommand({
 			certsDir,
 			ioTHubDPSConnectionString: getIotHubConnectionString,
 			iotDpsClient: getIotDpsClient

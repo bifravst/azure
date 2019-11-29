@@ -6,7 +6,7 @@ import { v4 } from 'uuid'
 import { generateCARoot } from '../iot/generateCARoot'
 import { log, debug } from '../logging'
 
-export const registerCARootCommand = ({
+export const createCARootCommand = ({
 	certsDir,
 	iotDpsClient,
 	resourceGroup,
@@ -17,7 +17,7 @@ export const registerCARootCommand = ({
 	dpsName: string
 	iotDpsClient: () => Promise<IotDpsClient>
 }): ComandDefinition => ({
-	command: 'register-ca-root',
+	command: 'create-ca-root',
 	action: async () => {
 		const certificateName = `bifravst-root-${v4()}`
 

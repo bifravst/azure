@@ -36,7 +36,7 @@ export const proofCARootPossessionCommand = ({
 
 		console.log(chalk.magenta('Verified root CA certificate.'))
 		console.log()
-		console.log(chalk.green('You can now register a CA intermediate certificate using'), chalk.blueBright('node cli register-ca-intermediate'))
+		console.log(chalk.green('You can now create a CA intermediate certificate using'), chalk.blueBright('node cli create-ca-intermediate'))
 	},
 	help: 'Verifies the root CA certificate which is registered with the Device Provisioning System',
 })
