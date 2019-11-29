@@ -115,7 +115,28 @@ export const connectCommand = ({
 
 			await fs.writeFile(deviceFiles.registration, JSON.stringify(registration, null, 2), 'utf-8')
 		} finally {
-			console.log(`FIXME: Connect to ${iotHub}`)
+
+			console.log(chalk.magenta(`Connecting to`), chalk.yellow(`${iotHub}`))
+
+			const client = connect({
+				host: iotHub,
+				port: 8883,
+				key: deviceKey,
+				cert: deviceCert,
+				rejectUnauthorized: true,
+				clientId: deviceId,
+				protocol: 'mqtts',
+				username: `${iotHub}/${deviceId}/?api-version=2018-06-30`,
+				version: 4,
+			})
+
+			client.on('connect', () => {
+				console.log(chalk.green('Connected:'), chalk.blueBright(deviceId))
+			})
+
+			client.on('error', err => {
+				console.error(chalk.red(err.message))
+			})
 		}
 	},
 	help: 'Connect to the IoT Hub',
