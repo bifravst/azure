@@ -8,6 +8,9 @@ import { v4 } from 'uuid'
 import { parse, URLSearchParams } from 'url'
 import { DeviceRegistrationState } from 'azure-iot-provisioning-service/lib/interfaces'
 import { uiServer, WebSocketConnection } from '@bifravst/device-ui-server'
+import { deviceTopics } from '../iot/deviceTopics'
+import { dpsTopics } from '../iot/dpsTopics'
+import { defaultConfig } from '../iot/defaultConfig'
 
 const deviceUiUrl = process.env.DEVICE_UI_LOCATION || ''
 
@@ -65,13 +68,13 @@ export const connectCommand = ({
 			})
 
 			// To register a device through DPS, a device should subscribe using $dps/registrations/res/# as a Topic Filter. The multi-level wildcard # in the Topic Filter is used only to allow the device to receive additional properties in the topic name. DPS does not allow the usage of the # or ? wildcards for filtering of subtopics. Since DPS is not a general-purpose pub-sub messaging broker, it only supports the documented topic names and topic filters.
-			client.subscribe('$dps/registrations/res/#')
+			client.subscribe(dpsTopics.registrationResponses)
 
 			client.on('connect', () => {
 				console.log(chalk.magenta('Connected:'), chalk.yellow(deviceId))
 
 				// The device should publish a register message to DPS using $dps/registrations/PUT/iotdps-register/?$rid={request_id} as a Topic Name. The payload should contain the Device Registration object in JSON format. In a successful scenario, the device will receive a response on the $dps/registrations/res/202/?$rid={request_id}&retry-after=x topic name where x is the retry-after value in seconds. The payload of the response will contain the RegistrationOperationStatus object in JSON format.
-				client.publish(`$dps/registrations/PUT/iotdps-register/?$rid=${v4()}`, JSON.stringify({
+				client.publish(dpsTopics.register(), JSON.stringify({
 					registrationId: deviceId
 				}))
 			})
@@ -81,19 +84,19 @@ export const connectCommand = ({
 				client.on('message', (topic, payload) => {
 					console.debug(chalk.magenta(topic), chalk.yellow(payload.toString()))
 					const message = JSON.parse(payload.toString())
-					if (topic.indexOf('$dps/registrations/res/202') === 0) {
+					if (topic.indexOf(dpsTopics.registrationResult(202)) === 0) {
 						const args = new URLSearchParams(`${parse(topic).query}`)
 						const { operationId, status } = message
 						console.log(chalk.magenta('Status:'), chalk.yellow(status))
 						console.log(chalk.magenta('Retry after:'), chalk.yellow(args.get('retry-after') as string))
 						setTimeout(() => {
 							// Assuming that the device has already subscribed to the $dps/registrations/res/# topic as indicated above, it can publish a get operationstatus message to the $dps/registrations/GET/iotdps-get-operationstatus/?$rid={request_id}&operationId={operationId} topic name. The operation ID in this message should be the value received in the RegistrationOperationStatus response message in the previous step. 
-							client.publish(`$dps/registrations/GET/iotdps-get-operationstatus/?$rid=${v4()}&operationId=${operationId}`, '')
+							client.publish(dpsTopics.registationStatus(operationId), '')
 						}, parseInt(args.get('retry-after') || '1', 10) * 1000)
 						return
 					}
 					// In the successful case, the service will respond on the $dps/registrations/res/200/?$rid={request_id} topic. The payload of the response will contain the RegistrationOperationStatus object. The device should keep polling the service if the response code is 202 after a delay equal to the retry-after period. The device registration operation is successful if the service returns a 200 status code.
-					if (topic.indexOf('$dps/registrations/res/200') === 0) {
+					if (topic.indexOf(dpsTopics.registrationResult(200)) === 0) {
 						const { status, registrationState } = message
 						console.log(chalk.magenta('Status:'), chalk.yellow(status))
 						console.log(chalk.magenta('IoT Hub:'), chalk.yellow(registrationState.assignedHub))
@@ -133,35 +136,73 @@ export const connectCommand = ({
 				version: 4,
 			})
 
+			let cfg = {
+				...defaultConfig
+			}
+
 			let wsConnection: WebSocketConnection
+
+			const sendConfigToUi = () => {
+				if (wsConnection) {
+					console.log(chalk.magenta('[ws>'), JSON.stringify(cfg))
+					wsConnection.send(JSON.stringify(cfg))
+				}
+			}
+
+			// See https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#update-device-twins-reported-properties
+			// A device must first subscribe to the $iothub/twin/res/# topic to receive the operation's responses from IoT Hub.
+			client.subscribe(deviceTopics.twinResponses)
+
+			const getTwinPropertiesRequestId = v4()
+			let updateReportedRequestId: string
 
 			client.on('connect', async () => {
 				console.log(chalk.green('Connected:'), chalk.blueBright(deviceId))
+
+				const getTwinPropertiesTopic = deviceTopics.getTwinProperties(getTwinPropertiesRequestId)
+				console.log(chalk.magenta('>'), chalk.yellow(getTwinPropertiesTopic))
+				client.publish(getTwinPropertiesTopic, '')
 
 				await uiServer({
 					deviceUiUrl,
 					deviceId: deviceId,
 					onUpdate: update => {
 						console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(update)))
+						updateReportedRequestId = v4()
+						client.publish(deviceTopics.updateTwinReported(updateReportedRequestId), JSON.stringify(update))
 					},
 					onWsConnection: c => {
 						console.log(chalk.magenta('[ws]'), chalk.cyan('connected'))
 						wsConnection = c
+						sendConfigToUi()
 					},
 				})
 			})
 
 			client.on('message', (topic, payload) => {
-				if (wsConnection) {
-					console.log(chalk.magenta('[ws>'), JSON.stringify({
-						topic,
-						payload,
-					}))
-					wsConnection.send(JSON.stringify({
-						topic,
-						payload,
-					}))
+				console.log(chalk.magenta('<'), chalk.yellow(topic))
+				if (payload.length) {
+					console.log(
+						chalk.magenta('<'),
+						chalk.cyan(payload.toString()),
+					)
 				}
+				if (topic === deviceTopics.twinResponse({ rid: getTwinPropertiesRequestId, status: 200 })) {
+					const p = JSON.parse(payload.toString())
+					cfg = {
+						...cfg,
+						...p.desired.cfg
+					}
+					console.log(chalk.blue('Config:'))
+					console.log(cfg)
+					sendConfigToUi()
+					return
+				}
+				if (deviceTopics.updateTwinReportedAccepted(updateReportedRequestId).test(topic)) {
+					// pass
+					return
+				}
+				console.error(chalk.red(`Unexpected topic:`), chalk.yellow(topic))
 			})
 
 			client.on('error', err => {
