@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
+  "contentVersion": "2.0.0.0",
   "parameters": {
     "iotHubName": {
       "type": "string",
@@ -30,6 +30,14 @@
       "defaultValue": 1,
       "metadata": {
         "description": "Specifies the number of provisioned IoT Hub units. Restricted to 1 unit for the F1 SKU. Can be set up to maximum number allowed for subscription."
+      }
+    },
+    "DeviceUiStorageName": {
+      "type": "string",
+      "defaultValue": "bifravstdeviceui",
+      "maxLength": 24,
+      "metadata": {
+        "description": "Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
       }
     }
   },
@@ -78,6 +86,19 @@
         ]
       },
       "dependsOn": ["[parameters('iotHubName')]"]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('DeviceUiStorageName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "supportsHttpsTrafficOnly": "true"
+      }
     }
   ],
   "outputs": {

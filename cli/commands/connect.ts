@@ -7,6 +7,9 @@ import { connect } from 'mqtt'
 import { v4 } from 'uuid'
 import { parse, URLSearchParams } from 'url'
 import { DeviceRegistrationState } from 'azure-iot-provisioning-service/lib/interfaces'
+import { uiServer, WebSocketConnection } from '@bifravst/device-ui-server'
+
+const deviceUiUrl = process.env.DEVICE_UI_LOCATION || ''
 
 export const connectCommand = ({
 	certsDir,
@@ -130,8 +133,35 @@ export const connectCommand = ({
 				version: 4,
 			})
 
-			client.on('connect', () => {
+			let wsConnection: WebSocketConnection
+
+			client.on('connect', async () => {
 				console.log(chalk.green('Connected:'), chalk.blueBright(deviceId))
+
+				await uiServer({
+					deviceUiUrl,
+					deviceId: deviceId,
+					onUpdate: update => {
+						console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(update)))
+					},
+					onWsConnection: c => {
+						console.log(chalk.magenta('[ws]'), chalk.cyan('connected'))
+						wsConnection = c
+					},
+				})
+			})
+
+			client.on('message', (topic, payload) => {
+				if (wsConnection) {
+					console.log(chalk.magenta('[ws>'), JSON.stringify({
+						topic,
+						payload,
+					}))
+					wsConnection.send(JSON.stringify({
+						topic,
+						payload,
+					}))
+				}
 			})
 
 			client.on('error', err => {
