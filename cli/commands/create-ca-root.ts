@@ -25,7 +25,7 @@ export const createCARootCommand = ({
 			certsDir,
 			name: certificateName,
 			log,
-			debug
+			debug,
 		})
 		console.log(chalk.magenta(`CA root certificate generated.`))
 
@@ -38,23 +38,29 @@ export const createCARootCommand = ({
 			dpsName,
 			certificateName,
 			{
-				certificate: root.certificate
+				certificate: root.certificate,
 			},
 		)
 
 		console.log(
 			chalk.magenta(`CA root registered with DPS.`),
-			chalk.yellow(dpsName)
+			chalk.yellow(dpsName),
 		)
 
 		// Create verification cert
 
-		const { etag } = await armDpsClient.dpsCertificate.get(certificateName, resourceGroup, dpsName)
-		const { properties } = await armDpsClient.dpsCertificate.generateVerificationCode(
+		const { etag } = await armDpsClient.dpsCertificate.get(
+			certificateName,
+			resourceGroup,
+			dpsName,
+		)
+		const {
+			properties,
+		} = await armDpsClient.dpsCertificate.generateVerificationCode(
 			certificateName,
 			etag as string,
 			resourceGroup,
-			dpsName
+			dpsName,
 		)
 
 		if (!properties?.verificationCode) {
@@ -65,17 +71,21 @@ export const createCARootCommand = ({
 			certsDir,
 			log,
 			debug,
-			verificationCode: properties.verificationCode
+			verificationCode: properties.verificationCode,
 		})
 
 		console.log(
 			chalk.magenta(`Generated verification certificate for verification code`),
-			chalk.yellow(properties.verificationCode)
+			chalk.yellow(properties.verificationCode),
 		)
 
 		console.log()
 
-		console.log(chalk.green('You can now verify the proof of posession using'), chalk.blueBright('node cli proof-ca-root-possession'))
+		console.log(
+			chalk.green('You can now verify the proof of posession using'),
+			chalk.blueBright('node cli proof-ca-root-possession'),
+		)
 	},
-	help: 'Creates a CA root certificate and registers it with the IoT Device Provisioning Service',
+	help:
+		'Creates a CA root certificate and registers it with the IoT Device Provisioning Service',
 })

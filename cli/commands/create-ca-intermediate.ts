@@ -17,14 +17,13 @@ export const createCAIntermediateCommand = ({
 }): ComandDefinition => ({
 	command: 'create-ca-intermediate',
 	action: async () => {
-
 		const id = v4()
 
 		const intermediate = await generateCAIntermediate({
 			id,
 			certsDir,
 			log,
-			debug
+			debug,
 		})
 		console.log(chalk.magenta(`CA intermediate certificate generated.`))
 
@@ -34,38 +33,56 @@ export const createCAIntermediateCommand = ({
 
 		const dpsConnString = await ioTHubDPSConnectionString()
 
-		const dpsClient = ProvisioningServiceClient.fromConnectionString(dpsConnString)
+		const dpsClient = ProvisioningServiceClient.fromConnectionString(
+			dpsConnString,
+		)
 
 		const enrollmentGroupId = `bifravst-${id}`
 
+		// FIXME: Remove undefined, once https://github.com/Azure/azure-iot-sdk-node/pull/663 is released
 		await dpsClient.createOrUpdateEnrollmentGroup({
 			enrollmentGroupId,
 			attestation: {
 				type: 'x509',
-				//@ts-ignore
 				x509: {
 					signingCertificates: {
 						primary: {
-							certificate: intermediate.certificate
-						}
-					}
-				}
+							certificate: intermediate.certificate,
+							info: undefined as any,
+						},
+						secondary: undefined as any,
+					},
+					clientCertificates: undefined as any,
+					caReferences: undefined as any,
+				},
 			},
-			provisioningStatus: "enabled",
+			provisioningStatus: 'enabled',
 			reprovisionPolicy: {
 				migrateDeviceData: true,
-				updateHubAssignment: true
-			}
+				updateHubAssignment: true,
+			},
+			initialTwin: undefined as any,
+			iotHubHostName: undefined as any,
+			iotHubs: undefined as any,
+			etag: undefined as any,
+			createdDateTimeUtc: undefined as any,
+			lastUpdatedDateTimeUtc: undefined as any,
 		})
 
 		console.log(
-			chalk.magenta(`Created enrollment group for CA intermediate certificiate`),
-			chalk.yellow(enrollmentGroupId)
+			chalk.magenta(
+				`Created enrollment group for CA intermediate certificiate`,
+			),
+			chalk.yellow(enrollmentGroupId),
 		)
 
 		console.log()
 
-		console.log(chalk.green('You can now generate device certificates using'), chalk.blueBright('node cli generate-device-cert'))
+		console.log(
+			chalk.green('You can now generate device certificates using'),
+			chalk.blueBright('node cli generate-device-cert'),
+		)
 	},
-	help: 'Creates a CA intermediate certificate registers it with an IoT Device Provisioning Service enrollment group',
+	help:
+		'Creates a CA intermediate certificate registers it with an IoT Device Provisioning Service enrollment group',
 })

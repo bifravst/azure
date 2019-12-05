@@ -10,9 +10,9 @@ export const CARootFileLocations = (certsDir: string) => ({
 
 export const CAIntermediateFileLocations = ({
 	certsDir,
-	id
+	id,
 }: {
-	certsDir: string,
+	certsDir: string
 	id: string
 }) => ({
 	privateKey: path.resolve(certsDir, `CA.intermediate.${id}.key`),

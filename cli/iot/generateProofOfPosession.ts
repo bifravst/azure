@@ -13,35 +13,38 @@ export const generateProofOfPosession = async (args: {
 	verificationCode: string
 	log: (...message: any[]) => void
 	debug: (...message: any[]) => void
-}): Promise<{ verification: CertificateCreationResult, }> => {
+}): Promise<{ verification: CertificateCreationResult }> => {
 	const { certsDir, log, debug, verificationCode } = args
 	const caFiles = CARootFileLocations(certsDir)
 
-	const [
-		rootKey,
-		rootCert
-	] = await Promise.all([
+	const [rootKey, rootCert] = await Promise.all([
 		fs.readFile(caFiles.privateKey, 'utf-8'),
 		fs.readFile(caFiles.cert, 'utf-8'),
 	])
 
-	const verificationCert = await new Promise<CertificateCreationResult>((resolve, reject) => createCertificate({
-		commonName: verificationCode,
-		serial: Math.floor(Math.random() * 1000000000),
-		days: 1,
-		config: leafCertConfig(verificationCode),
-		serviceKey: rootKey,
-		serviceCertificate: rootCert
-	}, (err, cert) => {
-		if (err) return reject(err)
-		resolve(cert)
-	}))
+	const verificationCert = await new Promise<CertificateCreationResult>(
+		(resolve, reject) =>
+			createCertificate(
+				{
+					commonName: verificationCode,
+					serial: Math.floor(Math.random() * 1000000000),
+					days: 1,
+					config: leafCertConfig(verificationCode),
+					serviceKey: rootKey,
+					serviceCertificate: rootCert,
+				},
+				(err, cert) => {
+					if (err) return reject(err)
+					resolve(cert)
+				},
+			),
+	)
 
 	log('Verification cert', caFiles.verificationCert)
 	debug(verificationCert.certificate)
 
-	await fs.writeFile(caFiles.verificationCert, verificationCert.certificate);
-	await fs.writeFile(caFiles.verificationKey, verificationCert.clientKey);
+	await fs.writeFile(caFiles.verificationCert, verificationCert.certificate)
+	await fs.writeFile(caFiles.verificationKey, verificationCert.clientKey)
 
 	return {
 		verification: verificationCert,

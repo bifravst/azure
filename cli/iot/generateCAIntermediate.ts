@@ -1,5 +1,8 @@
 import { promises as fs } from 'fs'
-import { CARootFileLocations, CAIntermediateFileLocations } from './caFileLocations'
+import {
+	CARootFileLocations,
+	CAIntermediateFileLocations,
+} from './caFileLocations'
 import { createCertificate, CertificateCreationResult } from 'pem'
 import { caCertConfig } from './pemConfig'
 
@@ -21,36 +24,39 @@ export const generateCAIntermediate = async (args: {
 
 	const caIntermediateFiles = CAIntermediateFileLocations({
 		certsDir,
-		id
+		id,
 	})
 
-	const [
-		rootPrivateKey,
-		rootCert
-	] = await Promise.all([
+	const [rootPrivateKey, rootCert] = await Promise.all([
 		fs.readFile(caRootFiles.privateKey, 'utf-8'),
 		fs.readFile(caRootFiles.cert, 'utf-8'),
 	])
 
 	const intermediateName = `Bifravst Intermediate CA (${id})`
 
-	const intermediateCert = await new Promise<CertificateCreationResult>((resolve, reject) => createCertificate({
-		commonName: intermediateName,
-		serial: Math.floor(Math.random() * 1000000000),
-		days: 365,
-		config: caCertConfig(intermediateName),
-		serviceKey: rootPrivateKey,
-		serviceCertificate: rootCert
-	}, (err, cert) => {
-		if (err) return reject(err)
-		resolve(cert)
-	}))
+	const intermediateCert = await new Promise<CertificateCreationResult>(
+		(resolve, reject) =>
+			createCertificate(
+				{
+					commonName: intermediateName,
+					serial: Math.floor(Math.random() * 1000000000),
+					days: 365,
+					config: caCertConfig(intermediateName),
+					serviceKey: rootPrivateKey,
+					serviceCertificate: rootCert,
+				},
+				(err, cert) => {
+					if (err) return reject(err)
+					resolve(cert)
+				},
+			),
+	)
 
 	log('Intermediate CA Certificate', caIntermediateFiles.cert)
 	debug(intermediateCert.certificate)
 
-	await fs.writeFile(caIntermediateFiles.cert, intermediateCert.certificate);
-	await fs.writeFile(caIntermediateFiles.privateKey, intermediateCert.clientKey);
+	await fs.writeFile(caIntermediateFiles.cert, intermediateCert.certificate)
+	await fs.writeFile(caIntermediateFiles.privateKey, intermediateCert.clientKey)
 
 	return intermediateCert
 }
