@@ -32,6 +32,14 @@
         "description": "Specifies the number of provisioned IoT Hub units. Restricted to 1 unit for the F1 SKU. Can be set up to maximum number allowed for subscription."
       }
     },
+    "AppStorageName": {
+      "type": "string",
+      "defaultValue": "bifravstapp",
+      "maxLength": 24,
+      "metadata": {
+        "description": "Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
+      }
+    },
     "DeviceUiStorageName": {
       "type": "string",
       "defaultValue": "bifravstdeviceui",
@@ -91,6 +99,19 @@
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-04-01",
       "name": "[parameters('DeviceUiStorageName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "supportsHttpsTrafficOnly": "true"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('AppStorageName')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
