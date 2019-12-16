@@ -3,7 +3,7 @@
   "version": "0.0.0-development",
   "description": "Microsoft Azure implementation of Bifravst",
   "scripts": {
-    "postinstall": "check-node-version --package --print && npx tsc"
+    "postinstall": "check-node-version --package --print"
   },
   "repository": {
     "type": "git",
