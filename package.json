@@ -45,7 +45,7 @@
     "@types/pem": "^1.9.5",
     "@types/uuid": "^3.4.6",
     "check-node-version": "^4.0.2",
-    "husky": "^3.0.9",
+    "husky": "^4.0.2",
     "pem": "^1.14.3",
     "typescript": "^3.7.3"
   },
