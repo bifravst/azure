@@ -153,7 +153,7 @@
       }
     },
     {
-      "apiVersion": "2018-11-01",
+      "apiVersion": "2016-08-01",
       "type": "Microsoft.Web/sites",
       "name": "[concat(parameters('appName'), 'WebSite')]",
       "location": "[parameters('location')]",
@@ -203,17 +203,29 @@
           "http20Enabled": true,
           "ftpsState": "Disabled"
         },
-        "httpsOnly": true,
-        "siteAuthEnabled": true,
-        "siteAuthSettings": {
-          "enabled": true,
-          "unauthenticatedClientAction": "RedirectToLoginPage",
-          "tokenStoreEnabled": true,
-          "defaultProvider": "AzureActiveDirectory",
-          "clientId": "[parameters('appRegistrationClientId')]",
-          "issuer": "[concat('https://sts.windows.net/', parameters('tenantId'), '/')]"
+        "httpsOnly": true
+      },
+      "resources": [
+        {
+          "apiVersion": "2018-11-01",
+          "name": "web",
+          "type": "config",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', concat(parameters('appName'), 'WebSite'))]"
+          ],
+          "properties": {
+            "siteAuthEnabled": true,
+            "siteAuthSettings": {
+              "enabled": true,
+              "unauthenticatedClientAction": "RedirectToLoginPage",
+              "tokenStoreEnabled": true,
+              "defaultProvider": "AzureActiveDirectory",
+              "clientId": "[parameters('appRegistrationClientId')]",
+              "issuer": "[concat('https://sts.windows.net/', parameters('tenantId'), '/')]"
+            }
+          }
         }
-      }
+      ]
     },
     {
       "apiVersion": "2018-05-01-preview",
