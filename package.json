@@ -48,6 +48,7 @@
     "check-node-version": "^4.0.2",
     "husky": "^4.2.0",
     "pem": "^1.14.3",
+    "run-node": "^1.0.0",
     "typescript": "^3.7.5"
   },
   "husky": {
