@@ -59,13 +59,11 @@
   },
   "lint-staged": {
     "*.{md,json,yaml,yml}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.{ts,tsx}": [
       "prettier --write",
-      "eslint --ext .js,.ts",
-      "git add"
+      "eslint --ext .js,.ts"
     ]
   },
   "engines": {
