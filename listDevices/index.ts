@@ -1,21 +1,39 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions'
+import { IotHubClient } from '@azure/arm-iothub'
+import * as msRestNodeAuth from '@azure/ms-rest-nodeauth'
 
 const listDevices: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
-	context.log('HTTP trigger function processed a request.')
-	const name = req.query.name || (req.body && req.body.name)
+	context.log({ req })
+	try {
+		// See https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=dotnet#obtaining-tokens-for-azure-resources
+		const msiTokenRes = await msRestNodeAuth.loginWithAppServiceMSI({
+			msiEndpoint: process.env.MSI_ENDPOINT || '',
+			msiSecret: process.env.MSI_SECRET || '',
+		})
+		console.log(msiTokenRes)
 
-	if (name) {
+		const iotHubClient = new IotHubClient(
+			msiTokenRes,
+			process.env.AZURE_SUBSCRIPTION_ID || '',
+		)
+		const iotHubs = await iotHubClient.iotHubResource.listBySubscription()
+
 		context.res = {
 			// status: 200, /* Defaults to 200 */
-			body: `Hello ${req.query.name || req.body.name}`,
+			headers: {
+				'Content-Type': 'application/json; charset=uft-8',
+			},
+			isRaw: true,
+			body: JSON.stringify(iotHubs),
 		}
-	} else {
+	} catch (error) {
 		context.res = {
-			status: 400,
-			body: 'Please pass a name on the query string or in the request body',
+			status: 500,
+			isRaw: true,
+			body: JSON.stringify(error),
 		}
 	}
 }

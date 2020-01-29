@@ -158,6 +158,9 @@
       "name": "[concat(parameters('appName'), 'WebSite')]",
       "location": "[parameters('location')]",
       "kind": "functionapp",
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', concat(parameters('appName'), 'ServerFarm'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('AppStorageName'))]"
