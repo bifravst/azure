@@ -43,7 +43,7 @@ export const createCARootCommand = ({
 		)
 
 		console.log(
-			chalk.magenta(`CA root registered with DPS.`),
+			chalk.magenta(`CA root registered with DPS`),
 			chalk.yellow(dpsName),
 		)
 
