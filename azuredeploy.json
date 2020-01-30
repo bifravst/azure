@@ -163,7 +163,8 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', concat(parameters('appName'), 'ServerFarm'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('AppStorageName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('AppStorageName'))]",
+        "[concat(parameters('appName'), 'IotHub')]"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('appName'), 'ServerFarm'))]",
@@ -196,6 +197,10 @@
             {
               "name": "WEBSITE_NODE_DEFAULT_VERSION",
               "value": "~10"
+            },
+            {
+              "name": "IOT_HUB_CONNECTION_STRING",
+              "value": "[concat('HostName=', reference(resourceId('Microsoft.Devices/IoTHubs', concat(parameters('appName'), 'IotHub')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).hostName, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', concat(parameters('appName'), 'IotHub')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).value[0].primaryKey)]"
             }
           ],
           "use32BitWorkerProcess": false,
