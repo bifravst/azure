@@ -33,7 +33,7 @@
     "azure-iothub": "^1.11.2",
     "deepmerge": "^4.1.1",
     "mqtt": "^3.0.0",
-    "uuid": "^3.4.0"
+    "uuid": "^7.0.0"
   },
   "devDependencies": {
     "@azure/arm-deviceprovisioningservices": "^2.1.0",
