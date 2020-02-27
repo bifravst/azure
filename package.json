@@ -44,7 +44,7 @@
     "@types/jsonwebtoken": "^8.3.7",
     "@types/node": "^13.7.0",
     "@types/pem": "^1.9.5",
-    "@types/uuid": "^3.4.7",
+    "@types/uuid": "^7.0.0",
     "check-node-version": "^4.0.2",
     "husky": "^4.2.1",
     "pem": "^1.14.4",
