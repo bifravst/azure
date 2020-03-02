@@ -3,3 +3,4 @@ npm-debug.log
 dist/
 certificates/
 local.settings.json
+build/
