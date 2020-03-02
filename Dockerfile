@@ -8,7 +8,7 @@ RUN apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get install -y nodejs
 RUN node -v
-# Azure Functions Core Tools
+# Azure Functions Core Tools, see https://github.com/Azure/azure-functions-core-tools#linux
 RUN apt -y install wget
 RUN wget -q https://packages.microsoft.com/config/ubuntu/18.10/packages-microsoft-prod.deb
 RUN dpkg -i packages-microsoft-prod.deb
