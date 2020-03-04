@@ -8,3 +8,5 @@
 [![ESLint: TypeScript](https://img.shields.io/badge/ESLint-TypeScript-blue.svg)](https://github.com/typescript-eslint/typescript-eslint)
 
 Read the documentation at https://bifravst.github.io/.
+
+> :construction: *Note:* The Azure implementation is work in progress.
