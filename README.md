@@ -9,4 +9,4 @@
 
 Read the documentation at https://bifravst.github.io/.
 
-> :construction: *Note:* The Azure implementation is work in progress.
+> :construction: *Note:* The Azure implementation is [work in progress](https://github.com/bifravst/bifravst/issues/29).
