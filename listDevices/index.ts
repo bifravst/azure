@@ -11,7 +11,9 @@ const listDevices: AzureFunction = async (
 	context.log({ req })
 	try {
 		const registry = Registry.fromConnectionString(connectionString)
-		const devices = registry.createQuery('SELECT deviceId FROM devices')
+		const devices = registry.createQuery(
+			'SELECT deviceId, tags.name FROM devices',
+		)
 		const res = await devices.nextAsTwin()
 		context.res = r(res.result)
 	} catch (error) {
