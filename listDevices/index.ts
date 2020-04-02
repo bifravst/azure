@@ -1,16 +1,8 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions'
 import { Registry } from 'azure-iothub'
+import { r } from '../lib/http'
 
 const connectionString = process.env.IOT_HUB_CONNECTION_STRING || ''
-
-const r = (result: any, status = 200) => ({
-	headers: {
-		'Content-Type': 'application/json; charset=uft-8',
-	},
-	status,
-	isRaw: true,
-	body: JSON.stringify(result),
-})
 
 const listDevices: AzureFunction = async (
 	context: Context,
@@ -19,7 +11,7 @@ const listDevices: AzureFunction = async (
 	context.log({ req })
 	try {
 		const registry = Registry.fromConnectionString(connectionString)
-		const devices = registry.createQuery('SELECT * FROM devices')
+		const devices = registry.createQuery('SELECT deviceId FROM devices')
 		const res = await devices.nextAsTwin()
 		context.res = r(res.result)
 	} catch (error) {
