@@ -1,0 +1,28 @@
+name: Publish Docker Image
+
+on:
+  push:
+    branches:
+      - saga
+  schedule:
+    - cron: "0 0 * * *"
+
+env:
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build image
+        run: |
+          git clone https://github.com/NordicPlayground/fw-nrfconnect-nrf nrf
+          cd nrf
+          docker build -t bifravst/azure-dev .
+      - name: Publish image
+        run: |
+          cd nrf
+          docker login -u bifravst -p $DOCKER_PASSWORD
+          docker images
+          docker push bifravst/azure-dev
