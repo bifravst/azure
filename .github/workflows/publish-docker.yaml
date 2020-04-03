@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - saga
+    paths:
+      - Dockerfile
+      - .github/workflows/publish-docker.yaml
   schedule:
     - cron: "0 0 * * *"
 
@@ -20,7 +23,6 @@ jobs:
           docker build -t bifravst/azure-dev .
       - name: Publish image
         run: |
-          cd nrf
           docker login -u bifravst -p $DOCKER_PASSWORD
           docker images
           docker push bifravst/azure-dev
