@@ -14,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/getDevice/index.js"
+  "scriptFile": "../dist/getDevice/getDevice.js"
 }

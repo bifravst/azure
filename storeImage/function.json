@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["get"],
-      "route": "devices"
+      "methods": ["post"],
+      "route": "images"
     },
     {
       "type": "http",
@@ -14,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/listDevices/listDevices.js"
+  "scriptFile": "../dist/storeImage/storeImage.js"
 }
