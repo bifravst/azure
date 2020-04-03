@@ -3,9 +3,9 @@ WORKDIR /workdir
 # Update system
 RUN apt-get -y update
 RUN apt-get -y upgrade
-# Install Node.js 12
+# Install Node.js 10
 RUN apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y nodejs
 RUN node -v
 # Azure Functions Core Tools, see https://github.com/Azure/azure-functions-core-tools#linux
