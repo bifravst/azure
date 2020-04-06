@@ -217,6 +217,11 @@ export const connectCommand = ({
 					}
 					console.log(chalk.blue('Config:'))
 					console.log(cfg)
+					updateReportedRequestId = v4()
+					client.publish(
+						deviceTopics.updateTwinReported(updateReportedRequestId),
+						JSON.stringify(cfg),
+					)
 					sendConfigToUi()
 					return
 				}
