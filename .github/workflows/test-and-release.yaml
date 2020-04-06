@@ -1,6 +1,11 @@
 name: Test and Release
 
-on: push
+on:
+  push:
+    paths-ignore:
+      - Dockerfile
+      - .github/workflows/test-docker.yaml
+      - .github/workflows/publish-docker.yaml
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
