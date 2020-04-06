@@ -1,9 +1,7 @@
 name: Test Docker Image
 
 on:
-  push:
-    branches:
-      - "!saga"
+  pull_request:
     paths:
       - Dockerfile
       - .github/workflows/test-docker.yaml
