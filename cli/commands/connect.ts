@@ -220,7 +220,7 @@ export const connectCommand = ({
 					updateReportedRequestId = v4()
 					client.publish(
 						deviceTopics.updateTwinReported(updateReportedRequestId),
-						JSON.stringify(cfg),
+						JSON.stringify({ cfg }),
 					)
 					sendConfigToUi()
 					return
