@@ -19,7 +19,7 @@ RUN \
     apt -y install azure-functions-core-tools && \
     func && \
     # download extension bundle
-    apt-get install -y nodejs && \
+    apt-get install -y unzip && \
     wget https://functionscdn.azureedge.net/public/ExtensionBundles/Microsoft.Azure.Functions.ExtensionBundle/1.1.1/Microsoft.Azure.Functions.ExtensionBundle.1.1.1.zip && \
     mkdir -p /tmp/Functions/ExtensionBundles/Microsoft.Azure.Functions.ExtensionBundle/1.1.1 && \
     unzip Microsoft.Azure.Functions.ExtensionBundle.1.1.1.zip -d /tmp/Functions/ExtensionBundles/Microsoft.Azure.Functions.ExtensionBundle/1.1.1 && \
