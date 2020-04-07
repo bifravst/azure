@@ -32,7 +32,7 @@
         "description": "Location for all resources."
       }
     },
-    "skuName": {
+    "iotHubSkuName": {
       "type": "string",
       "defaultValue": "F1",
       "metadata": {
@@ -106,10 +106,31 @@
             "lockDurationAsIso8601": "PT60S",
             "maxDeliveryCount": 10
           }
+        },
+        "eventHubEndpoints": {
+          "events": {
+            "retentionTimeInDays": 1,
+            "partitionCount": 2
+          },
+          "operationsMonitoringEvents": {
+            "retentionTimeInDays": 1,
+            "partitionCount": 2
+          }
+        },
+        "routing": {
+          "routes": [
+            {
+              "name": "twinChangeEventsToEventHub",
+              "source": "TwinChangeEvents",
+              "condition": "true",
+              "endpointNames": ["events"],
+              "isEnabled": true
+            }
+          ]
         }
       },
       "sku": {
-        "name": "[parameters('skuName')]",
+        "name": "[parameters('iotHubSkuName')]",
         "capacity": "[parameters('capacityUnits')]"
       }
     },
@@ -296,7 +317,7 @@
       "apiVersion": "2018-05-01-preview",
       "name": "[concat(parameters('appName'), 'Insights')]",
       "type": "microsoft.insights/components",
-      "location": "East US",
+      "location": "[parameters('location')]",
       "tags": {
         "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('appName'))]": "Resource"
       },
