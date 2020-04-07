@@ -25,13 +25,30 @@ const updateDevice: AzureFunction = async (
 				toStatusCode[ErrorType.EntityNotFound],
 			)
 		} else {
+			const { config: cfg, ...rest } = req.body
+
+			context.log({
+				tags: rest,
+				properties: {
+					desired: {
+						cfg,
+					},
+				},
+			})
+
 			await registry.updateTwin(
 				req.params.id,
 				{
-					tags: req.body,
+					tags: rest,
+					properties: {
+						desired: {
+							cfg,
+						},
+					},
 				},
 				res.result[0].etag,
 			)
+
 			context.res = r(true)
 		}
 	} catch (error) {
