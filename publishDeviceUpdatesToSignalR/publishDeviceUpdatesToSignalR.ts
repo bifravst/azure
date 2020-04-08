@@ -28,7 +28,7 @@ const publishDeviceUpdatesToSignalR: AzureFunction = async (
 	if (updates.length) {
 		log(context)({ updates })
 		context.bindings.signalRMessages = updates.map(update => ({
-			target: 'newMessage',
+			target: 'deviceUpdate',
 			arguments: [update],
 		}))
 	}
