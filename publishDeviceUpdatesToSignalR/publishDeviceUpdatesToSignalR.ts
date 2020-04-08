@@ -1,4 +1,5 @@
 import { AzureFunction, Context } from '@azure/functions'
+import { log } from '../lib/log'
 
 type Message = {
 	version: number
@@ -16,7 +17,7 @@ const publishDeviceUpdatesToSignalR: AzureFunction = async (
 	context: Context,
 	messages: Message[],
 ): Promise<void> => {
-	context.log(messages)
+	log(context)(messages)
 	messages.forEach(({ properties }) => {
 		if (!properties?.reported) return
 		console.log({

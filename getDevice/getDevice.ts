@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from '@azure/functions'
 import { Registry } from 'azure-iothub'
 import { r } from '../lib/http'
 import { ErrorInfo, ErrorType, toStatusCode } from '../lib/ErrorInfo'
+import { log } from '../lib/log'
 
 const connectionString = process.env.IOT_HUB_CONNECTION_STRING || ''
 
@@ -9,7 +10,7 @@ const getDevice: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
-	context.log({ req: JSON.stringify(req) })
+	log(context)({ req })
 	try {
 		const registry = Registry.fromConnectionString(connectionString)
 		const devices = registry.createQuery(
@@ -28,7 +29,7 @@ const getDevice: AzureFunction = async (
 			context.res = r(res.result[0])
 		}
 	} catch (error) {
-		context.log({
+		log(context)({
 			error: error.message,
 		})
 		context.res = r(error, 500)

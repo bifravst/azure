@@ -5,6 +5,7 @@ import {
 	BlobServiceClient,
 	StorageSharedKeyCredential,
 } from '@azure/storage-blob'
+import { log } from '../lib/log'
 
 const avatarStorageAccountName = process.env.AVATAR_STORAGE_ACCOUNT_NAME || ''
 const avatarStorageAccessKey = process.env.AVATAR_STORAGE_ACCESS_KEY || ''
@@ -27,8 +28,8 @@ const storeImage: AzureFunction = async (
 	req: HttpRequest,
 ): Promise<void> => {
 	const { body, rawBody, ...rest } = req
-	context.log({
-		req: JSON.stringify(rest),
+	log(context)({
+		req: rest,
 		avatarStorageAccountName,
 		avatarStorageAccessKey,
 		bodyLength: body.length,
@@ -43,7 +44,7 @@ const storeImage: AzureFunction = async (
 			blobCacheControl: 'public, max-age=31536000',
 		},
 	})
-	console.log(
+	log(context)(
 		`Upload block blob ${blobName} successfully`,
 		uploadBlobResponse.requestId,
 	)
