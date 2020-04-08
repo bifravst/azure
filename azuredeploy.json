@@ -279,6 +279,14 @@
             {
               "name": "AVATAR_STORAGE_CONTAINER",
               "value": "[parameters('AvatarStorageContainerName')]"
+            },
+            {
+              "name": "IoTHubEventHubCompatibleConnectionString",
+              "value": "[concat('Endpoint=', reference(resourceId('Microsoft.Devices/IoTHubs', concat(parameters('appName'), 'IotHub')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs', concat(parameters('appName'), 'IotHub')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).value[0].primaryKey, ';EntityPath=', reference(resourceId('Microsoft.Devices/IoTHubs', concat(parameters('appName'), 'IotHub')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.path)]"
+            },
+            {
+              "name": "IoTHubEventHubName",
+              "value": "[reference(resourceId('Microsoft.Devices/IoTHubs', concat(parameters('appName'), 'IotHub')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.path]"
             }
           ],
           "use32BitWorkerProcess": false,

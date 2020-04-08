@@ -8,7 +8,7 @@ const listDevices: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
-	context.log({ req })
+	context.log({ req: JSON.stringify(req) })
 	try {
 		const registry = Registry.fromConnectionString(connectionString)
 		const devices = registry.createQuery(
@@ -17,11 +17,9 @@ const listDevices: AzureFunction = async (
 		const res = await devices.nextAsTwin()
 		context.res = r(res.result)
 	} catch (error) {
-		context.log(
-			JSON.stringify({
-				error: error.message,
-			}),
-		)
+		context.log({
+			error: error.message,
+		})
 		context.res = r(error, 500)
 	}
 }

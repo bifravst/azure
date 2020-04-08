@@ -1,0 +1,12 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "IoTHubEventHubCompatibleConnectionString": "< ... >",
+    "AzureWebJobsStorage": "< ... >",
+    "IoTHubEventHubName": "< ... >"
+  },
+  "Host": {
+    "CORS": "*",
+    "CORSCredentials": false
+  }
+}

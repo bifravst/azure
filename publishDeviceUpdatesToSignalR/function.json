@@ -1,0 +1,13 @@
+{
+  "bindings": [
+    {
+      "type": "eventHubTrigger",
+      "direction": "in",
+      "name": "messages",
+      "cardinality": "many",
+      "eventHubName": "%IoTHubEventHubName%",
+      "connection": "IoTHubEventHubCompatibleConnectionString"
+    }
+  ],
+  "scriptFile": "../dist/publishDeviceUpdatesToSignalR/publishDeviceUpdatesToSignalR.js"
+}

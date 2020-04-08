@@ -28,11 +28,9 @@ const getDevice: AzureFunction = async (
 			context.res = r(res.result[0])
 		}
 	} catch (error) {
-		context.log(
-			JSON.stringify({
-				error: error.message,
-			}),
-		)
+		context.log({
+			error: error.message,
+		})
 		context.res = r(error, 500)
 	}
 }
