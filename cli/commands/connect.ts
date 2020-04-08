@@ -163,12 +163,30 @@ export const connectCommand = ({
 				}
 			}
 
+			let updateReportedRequestId: string
+			const updateConfig = (updateConfig: object) => {
+				cfg = {
+					...cfg,
+					...updateConfig,
+				}
+				console.log(chalk.blue('Config:'))
+				console.log(cfg)
+				updateReportedRequestId = v4()
+				client.publish(
+					deviceTopics.updateTwinReported(updateReportedRequestId),
+					JSON.stringify({ cfg }),
+				)
+				sendConfigToUi()
+			}
+
 			// See https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#update-device-twins-reported-properties
 			// A device must first subscribe to the $iothub/twin/res/# topic to receive the operation's responses from IoT Hub.
 			client.subscribe(deviceTopics.twinResponses)
+			// Receive desired properties update notifications
+			// See https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#receiving-desired-properties-update-notifications
+			client.subscribe(deviceTopics.desiredUpdate.name)
 
 			const getTwinPropertiesRequestId = v4()
-			let updateReportedRequestId: string
 
 			client.on('connect', async () => {
 				console.log(chalk.green('Connected:'), chalk.blueBright(deviceId))
@@ -203,6 +221,7 @@ export const connectCommand = ({
 				if (payload.length) {
 					console.log(chalk.magenta('<'), chalk.cyan(payload.toString()))
 				}
+				// Handle update reported messages
 				if (
 					topic ===
 					deviceTopics.twinResponse({
@@ -211,18 +230,7 @@ export const connectCommand = ({
 					})
 				) {
 					const p = JSON.parse(payload.toString())
-					cfg = {
-						...cfg,
-						...p.desired.cfg,
-					}
-					console.log(chalk.blue('Config:'))
-					console.log(cfg)
-					updateReportedRequestId = v4()
-					client.publish(
-						deviceTopics.updateTwinReported(updateReportedRequestId),
-						JSON.stringify({ cfg }),
-					)
-					sendConfigToUi()
+					updateConfig(p.desired.cfg)
 					return
 				}
 				if (
@@ -231,6 +239,14 @@ export const connectCommand = ({
 						.test(topic)
 				) {
 					// pass
+					return
+				}
+				// Handle desired updates
+				if (deviceTopics.desiredUpdate.test(topic)) {
+					const desiredUpdate = JSON.parse(payload.toString())
+					if (desiredUpdate.cfg) {
+						updateConfig(desiredUpdate.cfg)
+					}
 					return
 				}
 				console.error(chalk.red(`Unexpected topic:`), chalk.yellow(topic))

@@ -29,11 +29,9 @@ const deleteDevice: AzureFunction = async (
 			context.res = r({ success: true })
 		}
 	} catch (error) {
-		context.log(
-			JSON.stringify({
-				error: error.message,
-			}),
-		)
+		context.log({
+			error: error.message,
+		})
 		context.res = r(error, 500)
 	}
 }
