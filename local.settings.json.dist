@@ -3,7 +3,8 @@
   "Values": {
     "IoTHubEventHubCompatibleConnectionString": "< ... >",
     "AzureWebJobsStorage": "< ... >",
-    "IoTHubEventHubName": "< ... >"
+    "IoTHubEventHubName": "< ... >",
+    "SignalRConnectionString": "< ... >"
   },
   "Host": {
     "CORS": "*",

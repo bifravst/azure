@@ -7,6 +7,13 @@
       "cardinality": "many",
       "eventHubName": "%IoTHubEventHubName%",
       "connection": "IoTHubEventHubCompatibleConnectionString"
+    },
+    {
+      "type": "signalR",
+      "name": "signalRMessages",
+      "hubName": "deviceUpdates",
+      "connectionStringSetting": "SignalRConnectionString",
+      "direction": "out"
     }
   ],
   "scriptFile": "../dist/publishDeviceUpdatesToSignalR/publishDeviceUpdatesToSignalR.js"

@@ -83,6 +83,22 @@
       "metadata": {
         "description": "Blob container names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-) character must be immediately preceded and followed by a letter or number."
       }
+    },
+    "SignalRpricingTier": {
+      "type": "string",
+      "defaultValue": "Free_F1",
+      "allowedValues": ["Free_F1", "Standard_S1"],
+      "metadata": {
+        "description": "The pricing tier of the SignalR resource."
+      }
+    },
+    "SignalRcapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "allowedValues": [1, 2, 5, 10, 20, 50, 100],
+      "metadata": {
+        "description": "The number of SignalR Unit."
+      }
     }
   },
   "variables": {
@@ -230,7 +246,8 @@
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', concat(parameters('appName'), 'ServerFarm'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('AppStorageName'))]",
-        "[concat(parameters('appName'), 'IotHub')]"
+        "[concat(parameters('appName'), 'IotHub')]",
+        "[concat(parameters('appName'), 'SignalR')]"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('appName'), 'ServerFarm'))]",
@@ -287,6 +304,10 @@
             {
               "name": "IoTHubEventHubName",
               "value": "[reference(resourceId('Microsoft.Devices/IoTHubs', concat(parameters('appName'), 'IotHub')), providers('Microsoft.Devices', 'IoTHubs').apiVersions[0]).eventHubEndpoints.events.path]"
+            },
+            {
+              "name": "SignalRConnectionString",
+              "value": "[listKeys(resourceId('Microsoft.SignalRService/SignalR', concat(parameters('appName'), 'SignalR')), providers('Microsoft.SignalRService','SignalR').apiVersions[0]).primaryConnectionString]"
             }
           ],
           "use32BitWorkerProcess": false,
@@ -332,6 +353,25 @@
       "properties": {
         "ApplicationId": "[parameters('appName')]",
         "Request_Source": "IbizaWebAppExtensionCreate"
+      }
+    },
+    {
+      "type": "Microsoft.SignalRService/SignalR",
+      "apiVersion": "2018-10-01",
+      "location": "[parameters('location')]",
+      "name": "[concat(parameters('appName'), 'SignalR')]",
+      "properties": {
+        "hostNamePrefix": "[parameters('appName')]",
+        "features": [
+          {
+            "flag": "ServiceMode",
+            "value": "Serverless"
+          }
+        ]
+      },
+      "sku": {
+        "capacity": "[parameters('SignalRcapacity')]",
+        "name": "[parameters('SignalRpricingTier')]"
       }
     }
   ],
