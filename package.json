@@ -43,11 +43,11 @@
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-angular": "^8.3.4",
     "@types/jsonwebtoken": "^8.3.9",
-    "@types/node": "^13.11.0",
+    "@types/node": "^13.11.1",
     "@types/pem": "^1.9.5",
     "@types/uuid": "^7.0.2",
     "check-node-version": "^4.0.3",
-    "husky": "^4.2.3",
+    "husky": "^4.2.5",
     "pem": "^1.14.4",
     "run-node": "^2.0.0",
     "typescript": "^3.8.3"
