@@ -28,7 +28,7 @@
     "@azure/ms-rest-js": "^2.0.5",
     "@azure/ms-rest-nodeauth": ">=2.0.5 <3.0.0",
     "@azure/storage-blob": "^12.1.1",
-    "@bifravst/device-ui-server": "^1.1.4",
+    "@bifravst/device-ui-server": "^1.2.0",
     "@bifravst/random-words": "^4.2.0",
     "azure-iot-provisioning-service": "^1.8.0",
     "azure-iothub": "^1.12.0",
