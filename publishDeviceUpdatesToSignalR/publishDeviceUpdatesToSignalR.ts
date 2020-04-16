@@ -12,25 +12,38 @@ type Message = {
 
 /**
  * Publishes Device Twin Update to SignalR so the web application can receive real-time notifications
- *
- * FIXME: Get device ID
  */
 const publishDeviceUpdatesToSignalR: AzureFunction = async (
 	context: Context,
 	messages: Message[],
 ): Promise<void> => {
-	log(context)(messages)
+	log(context)({
+		messages,
+		systemPropertiesArray: context.bindingData.systemPropertiesArray,
+	})
 
 	const updates = messages
-		.filter(({ properties }) => properties?.reported)
-		.map(({ properties }) => properties?.reported)
+		.map((message, k) => ({
+			message,
+			systemProperties: context.bindingData.systemPropertiesArray[k],
+		}))
+		.filter(({ message: { properties } }) => properties?.reported)
+		.map(({ message: { properties }, systemProperties }) => ({
+			deviceId: systemProperties['iothub-connection-device-id'],
+			update: {
+				reported: properties?.reported,
+			},
+		}))
 
 	if (updates.length) {
 		log(context)({ updates })
-		context.bindings.signalRMessages = updates.map(update => ({
-			target: 'deviceUpdate',
-			arguments: [update],
-		}))
+		context.bindings.signalRMessages = updates.map((update) =>
+			// Send to a per-device "topic", so clients can subscribe to updates for a specific device
+			({
+				target: `deviceUpdate:${update.deviceId}`,
+				arguments: [update],
+			}),
+		)
 	}
 
 	context.done()
