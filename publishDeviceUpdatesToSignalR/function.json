@@ -3,7 +3,7 @@
     {
       "type": "eventHubTrigger",
       "direction": "in",
-      "name": "messages",
+      "name": "updates",
       "cardinality": "many",
       "eventHubName": "%IoTHubEventHubName%",
       "connection": "IoTHubEventHubCompatibleConnectionString"

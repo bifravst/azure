@@ -141,6 +141,13 @@
               "condition": "true",
               "endpointNames": ["events"],
               "isEnabled": true
+            },
+            {
+              "name": "twinMessagesToEventHub",
+              "source": "DeviceMessages",
+              "condition": "true",
+              "endpointNames": ["events"],
+              "isEnabled": true
             }
           ]
         }

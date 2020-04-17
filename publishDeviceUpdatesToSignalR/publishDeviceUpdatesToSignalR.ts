@@ -1,7 +1,7 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { log } from '../lib/log'
 
-type Message = {
+type TwinChangeEvent = {
 	version: number
 	tags?: { [key: string]: any }
 	properties?: {
@@ -10,41 +10,95 @@ type Message = {
 	}
 }
 
+type DeviceMessage = {
+	[key: string]: {
+		v: any
+		ts: number
+	}
+}
+
+type Update = TwinChangeEvent | DeviceMessage
+
 /**
  * Publishes Device Twin Update to SignalR so the web application can receive real-time notifications
  */
 const publishDeviceUpdatesToSignalR: AzureFunction = async (
 	context: Context,
-	messages: Message[],
+	updates: Update[],
 ): Promise<void> => {
 	log(context)({
-		messages,
+		messages: updates,
 		systemPropertiesArray: context.bindingData.systemPropertiesArray,
 	})
 
-	const updates = messages
-		.map((message, k) => ({
-			message,
-			systemProperties: context.bindingData.systemPropertiesArray[k],
-		}))
-		.filter(({ message: { properties } }) => properties?.reported)
-		.map(({ message: { properties }, systemProperties }) => ({
+	const signalRMessages = []
+
+	const addProperties = (message: Update, k: number) => ({
+		message,
+		systemProperties: context.bindingData.systemPropertiesArray[k],
+	})
+
+	const reportedUpdates = updates
+		.map(addProperties)
+		.filter(
+			({ systemProperties }) =>
+				systemProperties['iothub-message-source'] === 'twinChangeEvents',
+		)
+		.filter(({ message }) => (message as TwinChangeEvent)?.properties?.reported)
+		.map(({ message, systemProperties }) => ({
 			deviceId: systemProperties['iothub-connection-device-id'],
-			update: {
-				reported: properties?.reported,
+			state: {
+				reported: (message as TwinChangeEvent)?.properties?.reported,
 			},
 		}))
 
-	if (updates.length) {
-		log(context)({ updates })
-		context.bindings.signalRMessages = updates.map((update) =>
-			// Send to a per-device "topic", so clients can subscribe to updates for a specific device
-			({
-				target: `deviceUpdate:${update.deviceId}`,
-				arguments: [update],
-			}),
+	if (reportedUpdates.length) {
+		signalRMessages.push(
+			...reportedUpdates.map((update) =>
+				// Send to a per-device "topic", so clients can subscribe to updates for a specific device
+				({
+					target: `deviceState:${update.deviceId}`,
+					arguments: [update],
+				}),
+			),
 		)
 	}
+
+	const messages = updates
+		.map(addProperties)
+		.filter(
+			({ systemProperties }) =>
+				systemProperties['iothub-message-source'] === 'Telemetry',
+		)
+		.map(({ message, systemProperties }) => ({
+			deviceId: systemProperties['iothub-connection-device-id'],
+			message,
+		}))
+
+	if (messages.length) {
+		signalRMessages.push(
+			...messages.map((message) =>
+				// Send to a per-device "topic", so clients can subscribe to updates for a specific device
+				({
+					target: `deviceMessage:${message.deviceId}`,
+					arguments: [message],
+				}),
+			),
+		)
+		messages.forEach((message) => {
+			// Send to a per-action "topic", so clients can subscribe to updates for a specific action
+			signalRMessages.push(
+				...Object.keys(message.message).map((key) => ({
+					target: `deviceMessage:${key}`,
+					arguments: [message],
+				})),
+			)
+		})
+	}
+
+	log(context)({ signalRMessages })
+
+	context.bindings.signalRMessages = signalRMessages
 
 	context.done()
 }

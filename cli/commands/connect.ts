@@ -112,7 +112,7 @@ export const connectCommand = ({
 					}
 					reject(new Error(`Unexpected message on topic ${topic}!`))
 				})
-				client.on('error', err => {
+				client.on('error', (err) => {
 					console.error(chalk.red(err.message))
 					reject(err)
 				})
@@ -200,7 +200,7 @@ export const connectCommand = ({
 				await uiServer({
 					deviceUiUrl,
 					deviceId: deviceId,
-					onUpdate: update => {
+					onUpdate: (update) => {
 						console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(update)))
 						updateReportedRequestId = v4()
 						client.publish(
@@ -208,7 +208,14 @@ export const connectCommand = ({
 							JSON.stringify(update),
 						)
 					},
-					onWsConnection: c => {
+					onMessage: (message) => {
+						console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(message)))
+						client.publish(
+							deviceTopics.messages(deviceId),
+							JSON.stringify(message),
+						)
+					},
+					onWsConnection: (c) => {
 						console.log(chalk.magenta('[ws]'), chalk.cyan('connected'))
 						wsConnection = c
 						sendConfigToUi()
@@ -252,7 +259,7 @@ export const connectCommand = ({
 				console.error(chalk.red(`Unexpected topic:`), chalk.yellow(topic))
 			})
 
-			client.on('error', err => {
+			client.on('error', (err) => {
 				console.error(chalk.red(err.message))
 			})
 		}

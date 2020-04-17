@@ -14,4 +14,5 @@ export const deviceTopics = {
 	},
 	twinResponse: ({ status, rid }: { status: number; rid: string }) =>
 		`$iothub/twin/res/${status}/?$rid=${rid}`,
+	messages: (deviceId: string) => `devices/${deviceId}/messages/events/`,
 }
