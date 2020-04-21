@@ -17,9 +17,11 @@ const deviceUiUrl = process.env.DEVICE_UI_LOCATION || ''
 export const connectCommand = ({
 	certsDir,
 	iotDpsClient,
+	version,
 }: {
 	iotDpsClient: () => Promise<IotDpsClient>
 	certsDir: string
+	version: string
 }): ComandDefinition => ({
 	command: 'connect <deviceId>',
 	action: async (deviceId: string) => {
@@ -27,6 +29,30 @@ export const connectCommand = ({
 			certsDir,
 			deviceId,
 		})
+
+		const devRoam = {
+			dev: {
+				v: {
+					band: 666,
+					nw: 'LAN',
+					modV: 'device-simulator',
+					brdV: 'device-simulator',
+					appV: version,
+					iccid: '12345678901234567890',
+				},
+				ts: Date.now(),
+			},
+			roam: {
+				v: {
+					rsrp: 70,
+					area: 30401,
+					mccmnc: 24201,
+					cell: 16964098,
+					ip: '0.0.0.0',
+				},
+				ts: Date.now(),
+			},
+		} as const
 
 		const [deviceCert, deviceKey] = await Promise.all([
 			fs.readFile(deviceFiles.certWithChain, 'utf-8'),
@@ -163,7 +189,14 @@ export const connectCommand = ({
 				}
 			}
 
-			let updateReportedRequestId: string
+			const updateTwinReported = (update: object) => {
+				console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(update)))
+				client.publish(
+					deviceTopics.updateTwinReported(v4()),
+					JSON.stringify(update),
+				)
+			}
+
 			const updateConfig = (updateConfig: object) => {
 				cfg = {
 					...cfg,
@@ -171,11 +204,7 @@ export const connectCommand = ({
 				}
 				console.log(chalk.blue('Config:'))
 				console.log(cfg)
-				updateReportedRequestId = v4()
-				client.publish(
-					deviceTopics.updateTwinReported(updateReportedRequestId),
-					JSON.stringify({ cfg }),
-				)
+				updateTwinReported({ cfg, ...devRoam })
 				sendConfigToUi()
 			}
 
@@ -200,14 +229,7 @@ export const connectCommand = ({
 				await uiServer({
 					deviceUiUrl,
 					deviceId: deviceId,
-					onUpdate: (update) => {
-						console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(update)))
-						updateReportedRequestId = v4()
-						client.publish(
-							deviceTopics.updateTwinReported(updateReportedRequestId),
-							JSON.stringify(update),
-						)
-					},
+					onUpdate: updateTwinReported,
 					onMessage: (message) => {
 						console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(message)))
 						client.publish(
@@ -240,11 +262,7 @@ export const connectCommand = ({
 					updateConfig(p.desired.cfg)
 					return
 				}
-				if (
-					deviceTopics
-						.updateTwinReportedAccepted(updateReportedRequestId)
-						.test(topic)
-				) {
+				if (deviceTopics.updateTwinReportedAccepted.test(topic)) {
 					// pass
 					return
 				}

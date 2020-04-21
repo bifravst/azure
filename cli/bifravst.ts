@@ -1,6 +1,7 @@
 import * as program from 'commander'
 import chalk from 'chalk'
 import * as path from 'path'
+import * as fs from 'fs'
 import { createCARootCommand } from './commands/create-ca-root'
 import { IotHubClient } from '@azure/arm-iothub'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
@@ -15,6 +16,10 @@ import {
 	resourceGroupName,
 	deploymentName,
 } from '../arm/resources'
+
+const version = JSON.parse(
+	fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'),
+).version
 
 const ioTHubDPSConnectionString = ({
 	deploymentName,
@@ -72,11 +77,11 @@ const bifravstCLI = async () => {
 	})
 	const getIotDpsClient = async () =>
 		getCurrentCreds().then(
-			creds => new IotDpsClient(creds, creds.tokenInfo.subscription),
+			(creds) => new IotDpsClient(creds, creds.tokenInfo.subscription),
 		)
 	const getIotClient = async () =>
 		getCurrentCreds().then(
-			creds => new IotHubClient(creds, creds.tokenInfo.subscription),
+			(creds) => new IotHubClient(creds, creds.tokenInfo.subscription),
 		)
 
 	program.description('Bifravst Command Line Interface')
@@ -106,6 +111,7 @@ const bifravstCLI = async () => {
 		connectCommand({
 			iotDpsClient: getIotDpsClient,
 			certsDir,
+			version,
 		}),
 	]
 
@@ -146,7 +152,7 @@ const bifravstCLI = async () => {
 	}
 }
 
-bifravstCLI().catch(err => {
+bifravstCLI().catch((err) => {
 	console.error(chalk.red(err))
 	process.exit(1)
 })
