@@ -189,7 +189,7 @@ export const connectCommand = ({
 				}
 			}
 
-			const updateTwinReported = (update: object) => {
+			const updateTwinReported = (update: { [key: string]: any }) => {
 				console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(update)))
 				client.publish(
 					deviceTopics.updateTwinReported(v4()),
