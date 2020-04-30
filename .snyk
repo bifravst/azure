@@ -1,0 +1,26 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - azure-iothub > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iothub > async > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iothub > machina > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iothub > azure-iot-amqp-base > async > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iothub > azure-iot-amqp-base > machina > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iot-provisioning-service > azure-iot-common > getos > async > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iothub > azure-iot-common > getos > async > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iot-provisioning-service > azure-iot-http-base > azure-iot-common > getos > async > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iothub > azure-iot-http-base > azure-iot-common > getos > async > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
+    - azure-iothub > azure-iot-amqp-base > azure-iot-common > getos > async > lodash:
+        patched: '2020-04-30T23:47:36.834Z'
