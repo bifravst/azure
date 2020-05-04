@@ -3,7 +3,9 @@
   "version": "0.0.0-development",
   "description": "Microsoft Azure implementation of Bifravst",
   "scripts": {
-    "postinstall": "check-node-version --package --print"
+    "postinstall": "check-node-version --package --print",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -34,7 +36,8 @@
     "azure-iothub": "^1.12.1",
     "deepmerge": "^4.1.1",
     "mqtt": "^4.0.0",
-    "uuid": "^7.0.3"
+    "uuid": "^7.0.3",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@azure/arm-deviceprovisioningservices": "^2.1.0",
@@ -81,5 +84,6 @@
       "@semantic-release/release-notes-generator",
       "@semantic-release/github"
     ]
-  }
+  },
+  "snyk": true
 }
