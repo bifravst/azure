@@ -84,6 +84,15 @@
         "description": "Blob container names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-) character must be immediately preceded and followed by a letter or number."
       }
     },
+    "FOTAStorageName": {
+      "type": "string",
+      "defaultValue": "bifravstfota",
+      "minLength": 3,
+      "maxLength": 24,
+      "metadata": {
+        "description": "Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
+      }
+    },
     "SignalRpricingTier": {
       "type": "string",
       "defaultValue": "Free_F1",
@@ -105,6 +114,7 @@
     "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', concat(parameters('appName'), 'IotHub'))]",
     "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', concat(parameters('appName'), 'IotHub'), 'iothubowner')]",
     "appStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('AppStorageName'))]",
+    "FOTAStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('FOTAStorageName'))]",
     "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('AvatarStorageName'))]"
   },
   "resources": [
@@ -379,6 +389,19 @@
       "sku": {
         "capacity": "[parameters('SignalRcapacity')]",
         "name": "[parameters('SignalRpricingTier')]"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('FOTAStorageName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "supportsHttpsTrafficOnly": true
       }
     }
   ],
