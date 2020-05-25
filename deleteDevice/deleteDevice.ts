@@ -25,10 +25,9 @@ const deleteDevice: AzureFunction = async (
 				} as ErrorInfo,
 				toStatusCode[ErrorType.EntityNotFound],
 			)
-		} else {
-			await registry.delete(req.params.id)
-			context.res = r({ success: true })
 		}
+		await registry.delete(req.params.id)
+		context.res = r({ success: true })
 	} catch (error) {
 		log(context)({
 			error: error.message,
