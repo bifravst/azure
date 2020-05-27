@@ -4,7 +4,7 @@ import { r } from '../lib/http'
 import { ErrorInfo, ErrorType, toStatusCode } from '../lib/ErrorInfo'
 import { log } from '../lib/log'
 
-const connectionString = process.env.IOT_HUB_CONNECTION_STRING || ''
+const connectionString = process.env.IOT_HUB_CONNECTION_STRING ?? ''
 
 const updateDevice: AzureFunction = async (
 	context: Context,
@@ -26,13 +26,14 @@ const updateDevice: AzureFunction = async (
 				toStatusCode[ErrorType.EntityNotFound],
 			)
 		} else {
-			const { config: cfg, ...rest } = req.body
+			const { config: cfg, fota, ...rest } = req.body
 
 			log(context)({
 				tags: rest,
 				properties: {
 					desired: {
 						cfg,
+						fota,
 					},
 				},
 			})
@@ -44,6 +45,7 @@ const updateDevice: AzureFunction = async (
 					properties: {
 						desired: {
 							cfg,
+							fota,
 						},
 					},
 				},

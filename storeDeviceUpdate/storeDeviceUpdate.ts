@@ -7,9 +7,9 @@ import {
 	StorageSharedKeyCredential,
 } from '@azure/storage-blob'
 
-const fotaStorageAccountName = process.env.FOTA_STORAGE_ACCOUNT_NAME || ''
-const fotaStorageAccessKey = process.env.FOTA_STORAGE_ACCESS_KEY || ''
-const fotaStorageContainer = process.env.FOTA_STORAGE_CONTAINER || ''
+const fotaStorageAccountName = process.env.FOTA_STORAGE_ACCOUNT_NAME ?? ''
+const fotaStorageAccessKey = process.env.FOTA_STORAGE_ACCESS_KEY ?? ''
+const fotaStorageContainer = process.env.FOTA_STORAGE_CONTAINER ?? ''
 
 const sharedKeyCredential = new StorageSharedKeyCredential(
 	fotaStorageAccountName,
@@ -27,7 +27,7 @@ const storeDeviceUpdate: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
-	const { body, rawBody, ...rest } = req
+	const { body, ...rest } = req
 	log(context)({
 		req: rest,
 		fotaStorageAccountName,
@@ -56,7 +56,7 @@ const storeDeviceUpdate: AzureFunction = async (
 
 		const url = `https://${fotaStorageAccountName}.blob.core.windows.net/${fotaStorageContainer}/${blobName}`
 
-		context.res = r({ success: true, url, id })
+		context.res = r({ success: true, url })
 	} catch (error) {
 		log(context)({
 			error: error.message,

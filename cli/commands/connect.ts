@@ -12,7 +12,7 @@ import { deviceTopics } from '../iot/deviceTopics'
 import { dpsTopics } from '../iot/dpsTopics'
 import { defaultConfig } from '../iot/defaultConfig'
 
-const deviceUiUrl = process.env.DEVICE_UI_LOCATION || ''
+const deviceUiUrl = process.env.DEVICE_UI_LOCATION ?? ''
 
 export const connectCommand = ({
 	certsDir,
@@ -123,7 +123,7 @@ export const connectCommand = ({
 						setTimeout(() => {
 							// Assuming that the device has already subscribed to the $dps/registrations/res/# topic as indicated above, it can publish a get operationstatus message to the $dps/registrations/GET/iotdps-get-operationstatus/?$rid={request_id}&operationId={operationId} topic name. The operation ID in this message should be the value received in the RegistrationOperationStatus response message in the previous step.
 							client.publish(dpsTopics.registationStatus(operationId), '')
-						}, parseInt(args.get('retry-after') || '1', 10) * 1000)
+						}, parseInt(args.get('retry-after') ?? '1', 10) * 1000)
 						return
 					}
 					// In the successful case, the service will respond on the $dps/registrations/res/200/?$rid={request_id} topic. The payload of the response will contain the RegistrationOperationStatus object. The device should keep polling the service if the response code is 202 after a delay equal to the retry-after period. The device registration operation is successful if the service returns a 200 status code.
@@ -183,21 +183,21 @@ export const connectCommand = ({
 			let wsConnection: WebSocketConnection
 
 			const sendConfigToUi = () => {
-				if (wsConnection) {
+				if (wsConnection !== undefined) {
 					console.log(chalk.magenta('[ws>'), JSON.stringify(cfg))
 					wsConnection.send(JSON.stringify(cfg))
 				}
 			}
 
 			const updateTwinReported = (update: { [key: string]: any }) => {
-				console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(update)))
+				console.log(chalk.magenta('>'), chalk.cyan(JSON.stringify(update)))
 				client.publish(
 					deviceTopics.updateTwinReported(v4()),
 					JSON.stringify(update),
 				)
 			}
 
-			const updateConfig = (updateConfig: object) => {
+			const updateConfig = (updateConfig: { [key: string]: any }) => {
 				cfg = {
 					...cfg,
 					...updateConfig,
@@ -206,6 +206,23 @@ export const connectCommand = ({
 				console.log(cfg)
 				updateTwinReported({ cfg, ...devRoam })
 				sendConfigToUi()
+			}
+
+			const simulateFota = (fota: { jobId: string }) => {
+				updateTwinReported({
+					fota: {
+						jobId: fota.jobId,
+						status: 'IN_PROGRESS',
+					},
+				})
+				setTimeout(() => {
+					updateTwinReported({
+						fota: {
+							jobId: fota.jobId,
+							status: 'SUCCEEDED',
+						},
+					})
+				}, 10 * 1000)
 			}
 
 			// See https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-mqtt-support#update-device-twins-reported-properties
@@ -231,7 +248,7 @@ export const connectCommand = ({
 					deviceId: deviceId,
 					onUpdate: updateTwinReported,
 					onMessage: (message) => {
-						console.log(chalk.magenta('<'), chalk.cyan(JSON.stringify(message)))
+						console.log(chalk.magenta('>'), chalk.cyan(JSON.stringify(message)))
 						client.publish(
 							deviceTopics.messages(deviceId),
 							JSON.stringify(message),
@@ -269,8 +286,11 @@ export const connectCommand = ({
 				// Handle desired updates
 				if (deviceTopics.desiredUpdate.test(topic)) {
 					const desiredUpdate = JSON.parse(payload.toString())
-					if (desiredUpdate.cfg) {
+					if (desiredUpdate.cfg !== undefined) {
 						updateConfig(desiredUpdate.cfg)
+					}
+					if (desiredUpdate.fota !== undefined) {
+						simulateFota(desiredUpdate.fota)
 					}
 					return
 				}

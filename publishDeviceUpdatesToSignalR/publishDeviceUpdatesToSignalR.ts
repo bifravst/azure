@@ -44,11 +44,16 @@ const publishDeviceUpdatesToSignalR: AzureFunction = async (
 			({ systemProperties }) =>
 				systemProperties['iothub-message-source'] === 'twinChangeEvents',
 		)
-		.filter(({ message }) => (message as TwinChangeEvent)?.properties?.reported)
+		.filter(
+			({ message }) =>
+				(message as TwinChangeEvent)?.properties?.reported ??
+				(message as TwinChangeEvent)?.properties?.desired,
+		)
 		.map(({ message, systemProperties }) => ({
 			deviceId: systemProperties['iothub-connection-device-id'],
 			state: {
 				reported: (message as TwinChangeEvent)?.properties?.reported,
+				desired: (message as TwinChangeEvent)?.properties?.desired,
 			},
 		}))
 
