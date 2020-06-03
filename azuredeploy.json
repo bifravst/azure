@@ -129,7 +129,7 @@
   "resources": [
     {
       "type": "Microsoft.Devices/IotHubs",
-      "apiVersion": "2018-04-01",
+      "apiVersion": "2020-03-01",
       "name": "[concat(parameters('appName'), 'IotHub')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -144,10 +144,6 @@
         },
         "eventHubEndpoints": {
           "events": {
-            "retentionTimeInDays": 1,
-            "partitionCount": 2
-          },
-          "operationsMonitoringEvents": {
             "retentionTimeInDays": 1,
             "partitionCount": 2
           }
@@ -183,7 +179,7 @@
         "capacity": 1
       },
       "name": "[concat(parameters('appName'), 'ProvisioningService')]",
-      "apiVersion": "2017-11-15",
+      "apiVersion": "2020-01-01",
       "location": "[parameters('location')]",
       "properties": {
         "iotHubs": [
@@ -198,7 +194,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-04-01",
+      "apiVersion": "2019-06-01",
       "name": "[parameters('DeviceUiStorageName')]",
       "location": "[parameters('location')]",
       "sku": {
@@ -211,7 +207,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-04-01",
+      "apiVersion": "2019-06-01",
       "name": "[parameters('AppStorageName')]",
       "location": "[parameters('location')]",
       "sku": {
@@ -224,7 +220,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-04-01",
+      "apiVersion": "2019-06-01",
       "name": "[parameters('AvatarStorageName')]",
       "location": "[parameters('location')]",
       "sku": {
@@ -248,7 +244,7 @@
     },
     {
       "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2019-08-01",
       "name": "[concat(parameters('appName'), 'ServerFarm')]",
       "location": "[parameters('location')]",
       "sku": {
@@ -261,8 +257,8 @@
       }
     },
     {
-      "apiVersion": "2016-08-01",
       "type": "Microsoft.Web/sites",
+      "apiVersion": "2019-08-01",
       "name": "[concat(parameters('appName'), 'WebSite')]",
       "location": "[parameters('location')]",
       "kind": "functionapp",
@@ -360,7 +356,7 @@
       },
       "resources": [
         {
-          "apiVersion": "2018-11-01",
+          "apiVersion": "2019-08-01",
           "name": "web",
           "type": "config",
           "dependsOn": [
@@ -381,9 +377,9 @@
       ]
     },
     {
+      "type": "microsoft.insights/components",
       "apiVersion": "2018-05-01-preview",
       "name": "[concat(parameters('appName'), 'Insights')]",
-      "type": "microsoft.insights/components",
       "location": "[parameters('location')]",
       "tags": {
         "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('appName'))]": "Resource"
@@ -414,7 +410,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-04-01",
+      "apiVersion": "2019-06-01",
       "name": "[parameters('FOTAStorageName')]",
       "location": "[parameters('location')]",
       "sku": {
