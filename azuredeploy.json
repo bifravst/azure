@@ -75,6 +75,15 @@
         "description": "Blob container names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-) character must be immediately preceded and followed by a letter or number."
       }
     },
+    "IotDataStorageContainerName": {
+      "type": "string",
+      "defaultValue": "messages",
+      "minLength": 3,
+      "maxLength": 63,
+      "metadata": {
+        "description": "Blob container names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-) character must be immediately preceded and followed by a letter or number."
+      }
+    },
     "SignalRpricingTier": {
       "type": "string",
       "defaultValue": "Free_F1",
@@ -122,6 +131,23 @@
           }
         },
         "routing": {
+          "endpoints": {
+            "serviceBusQueues": [],
+            "serviceBusTopics": [],
+            "eventHubs": [],
+            "storageContainers": [
+              {
+                "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appName'), 'iotdata',';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', concat(parameters('appName'), 'iotdata')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
+                "containerName": "[parameters('IotDataStorageContainerName')]",
+                "fileNameFormat": "{iothub}/{partition}/{YYYY}/{MM}/{DD}/{HH}/{mm}",
+                "batchFrequencyInSeconds": 300,
+                "maxChunkSizeInBytes": 524288000,
+                "encoding": "json",
+                "authenticationType": "keyBased",
+                "name": "storeIotMessages"
+              }
+            ]
+          },
           "routes": [
             {
               "name": "twinChangeEventsToEventHub",
@@ -135,6 +161,20 @@
               "source": "DeviceMessages",
               "condition": "true",
               "endpointNames": ["events"],
+              "isEnabled": true
+            },
+            {
+              "name": "twinChangeEventsToStorage",
+              "source": "TwinChangeEvents",
+              "condition": "true",
+              "endpointNames": ["storeIotMessages"],
+              "isEnabled": true
+            },
+            {
+              "name": "twinMessagesToStorage",
+              "source": "DeviceMessages",
+              "condition": "true",
+              "endpointNames": ["storeIotMessages"],
               "isEnabled": true
             }
           ]
@@ -403,6 +443,30 @@
       },
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', concat(parameters('appName'), 'fota'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "name": "[concat(parameters('appName'), 'iotdata')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "supportsHttpsTrafficOnly": true
+      }
+    },
+    {
+      "name": "[concat(parameters('appName'), 'iotdata','/default/', parameters('IotDataStorageContainerName'))]",
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2019-06-01",
+      "properties": {
+        "publicAccess": "Blob"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', concat(parameters('appName'), 'iotdata'))]"
       ]
     }
   ],
