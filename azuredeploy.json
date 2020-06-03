@@ -48,27 +48,9 @@
         "description": "Specifies the number of provisioned IoT Hub units. Restricted to 1 unit for the F1 SKU. Can be set up to maximum number allowed for subscription."
       }
     },
-    "AppStorageName": {
-      "type": "string",
-      "defaultValue": "bifravstapp",
-      "minLength": 3,
-      "maxLength": 24,
-      "metadata": {
-        "description": "Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
-      }
-    },
     "DeviceUiStorageName": {
       "type": "string",
       "defaultValue": "bifravstdeviceui",
-      "minLength": 3,
-      "maxLength": 24,
-      "metadata": {
-        "description": "Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
-      }
-    },
-    "AvatarStorageName": {
-      "type": "string",
-      "defaultValue": "bifravstavatars",
       "minLength": 3,
       "maxLength": 24,
       "metadata": {
@@ -82,15 +64,6 @@
       "maxLength": 63,
       "metadata": {
         "description": "Blob container names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-) character must be immediately preceded and followed by a letter or number."
-      }
-    },
-    "FOTAStorageName": {
-      "type": "string",
-      "defaultValue": "bifravstfota",
-      "minLength": 3,
-      "maxLength": 24,
-      "metadata": {
-        "description": "Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
       }
     },
     "FOTAStorageContainerName": {
@@ -122,9 +95,9 @@
   "variables": {
     "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', concat(parameters('appName'), 'IotHub'))]",
     "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', concat(parameters('appName'), 'IotHub'), 'iothubowner')]",
-    "appStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('AppStorageName'))]",
-    "FOTAStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('FOTAStorageName'))]",
-    "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('AvatarStorageName'))]"
+    "appStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'app')]",
+    "FOTAStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'fota')]",
+    "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'avatars')]"
   },
   "resources": [
     {
@@ -186,7 +159,7 @@
           {
             "connectionString": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=iothubowner;SharedAccessKey=', listkeys(variables('iotHubKeyResource'), '2017-07-01').primaryKey)]",
             "location": "[parameters('location')]",
-            "name": "[concat(concat(parameters('appName'), 'IotHub'),'.azure-devices.net')]"
+            "name": "[concat(parameters('appName'), 'IotHub','.azure-devices.net')]"
           }
         ]
       },
@@ -208,7 +181,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
-      "name": "[parameters('AppStorageName')]",
+      "name": "[concat(parameters('appName'), 'app')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
@@ -221,7 +194,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
-      "name": "[parameters('AvatarStorageName')]",
+      "name": "[concat(parameters('appName'), 'avatars')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
@@ -232,14 +205,14 @@
       }
     },
     {
-      "name": "[concat(parameters('AvatarStorageName'),'/default/', parameters('AvatarStorageContainerName'))]",
+      "name": "[concat(parameters('appName'), 'avatars','/default/', parameters('AvatarStorageContainerName'))]",
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2019-06-01",
       "properties": {
         "publicAccess": "Blob"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', parameters('AvatarStorageName'))]"
+        "[concat('Microsoft.Storage/storageAccounts/', concat(parameters('appName'), 'avatars'))]"
       ]
     },
     {
@@ -267,7 +240,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', concat(parameters('appName'), 'ServerFarm'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('AppStorageName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', concat(parameters('appName'), 'app'))]",
         "[concat(parameters('appName'), 'IotHub')]",
         "[concat(parameters('appName'), 'SignalR')]"
       ],
@@ -277,11 +250,11 @@
           "appSettings": [
             {
               "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('AppStorageName'), ';AccountKey=', listKeys(variables('appStorageAccountId'),'2015-05-01-preview').key1)]"
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat(parameters('appName'), 'app'), ';AccountKey=', listKeys(variables('appStorageAccountId'),'2015-05-01-preview').key1)]"
             },
             {
               "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('AppStorageName'), ';AccountKey=', listKeys(variables('appStorageAccountId'),'2015-05-01-preview').key1)]"
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat(parameters('appName'), 'app'), ';AccountKey=', listKeys(variables('appStorageAccountId'),'2015-05-01-preview').key1)]"
             },
             {
               "name": "WEBSITE_CONTENTSHARE",
@@ -309,7 +282,7 @@
             },
             {
               "name": "AVATAR_STORAGE_ACCOUNT_NAME",
-              "value": "[parameters('AvatarStorageName')]"
+              "value": "[concat(parameters('appName'), 'avatars')]"
             },
             {
               "name": "AVATAR_STORAGE_ACCESS_KEY",
@@ -321,7 +294,7 @@
             },
             {
               "name": "FOTA_STORAGE_ACCOUNT_NAME",
-              "value": "[parameters('FotaStorageName')]"
+              "value": "[concat(parameters('appName'), 'fota')]"
             },
             {
               "name": "FOTA_STORAGE_ACCESS_KEY",
@@ -411,7 +384,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
-      "name": "[parameters('FOTAStorageName')]",
+      "name": "[concat(parameters('appName'), 'fota')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
@@ -422,14 +395,14 @@
       }
     },
     {
-      "name": "[concat(parameters('FOTAStorageName'),'/default/', parameters('FOTAStorageContainerName'))]",
+      "name": "[concat(parameters('appName'), 'fota','/default/', parameters('FOTAStorageContainerName'))]",
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2019-06-01",
       "properties": {
         "publicAccess": "Blob"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', parameters('FOTAStorageName'))]"
+        "[concat('Microsoft.Storage/storageAccounts/', concat(parameters('appName'), 'fota'))]"
       ]
     }
   ],
