@@ -75,7 +75,7 @@
         "description": "Blob container names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-) character must be immediately preceded and followed by a letter or number."
       }
     },
-    "IotDataStorageContainerName": {
+    "DeviceMessagesStorageContainerName": {
       "type": "string",
       "defaultValue": "messages",
       "minLength": 3,
@@ -99,6 +99,21 @@
       "metadata": {
         "description": "The number of SignalR Unit."
       }
+    },
+    "SynapseSQLAdministratorLogin": {
+      "type": "string",
+      "defaultValue": "sqladminuser",
+      "metadata": {
+        "description": "Your login name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.)"
+      }
+    },
+    "SynapseSQLAdministratorLoginPassword": {
+      "type": "secureString",
+      "defaultValue": ""
+    },
+    "SynapseStorageBlobDataContributorRoleUniqueID": {
+      "type": "string",
+      "defaultValue": "[newGuid()]"
     }
   },
   "variables": {
@@ -106,7 +121,9 @@
     "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', concat(parameters('appName'), 'IotHub'), 'iothubowner')]",
     "appStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'app')]",
     "FOTAStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'fota')]",
-    "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'avatars')]"
+    "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'avatars')]",
+    "defaultDataLakeStorageAccountUrl": "[concat('https://', parameters('appName'), 'devicemessages', '.dfs.core.windows.net')]",
+    "SynapseStorageBlobDataContributorRoleID": "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
   },
   "resources": [
     {
@@ -137,8 +154,8 @@
             "eventHubs": [],
             "storageContainers": [
               {
-                "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appName'), 'iotdata',';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', concat(parameters('appName'), 'iotdata')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
-                "containerName": "[parameters('IotDataStorageContainerName')]",
+                "connectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('appName'), 'devicemessages',';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', concat(parameters('appName'), 'devicemessages')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
+                "containerName": "[parameters('DeviceMessagesStorageContainerName')]",
                 "fileNameFormat": "{iothub}/{partition}/{YYYY}/{MM}/{DD}/{HH}/{mm}",
                 "batchFrequencyInSeconds": 300,
                 "maxChunkSizeInBytes": 524288000,
@@ -448,26 +465,107 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
-      "name": "[concat(parameters('appName'), 'iotdata')]",
+      "name": "[concat(parameters('appName'), 'devicemessages')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
       },
       "kind": "StorageV2",
       "properties": {
-        "supportsHttpsTrafficOnly": true
+        "supportsHttpsTrafficOnly": true,
+        "isHnsEnabled": true
       }
     },
     {
-      "name": "[concat(parameters('appName'), 'iotdata','/default/', parameters('IotDataStorageContainerName'))]",
+      "name": "[concat(parameters('appName'), 'devicemessages','/default/', parameters('DeviceMessagesStorageContainerName'))]",
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2019-06-01",
       "properties": {
-        "publicAccess": "Blob"
+        "publicAccess": "None"
       },
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', concat(parameters('appName'), 'iotdata'))]"
+        "[concat('Microsoft.Storage/storageAccounts/', concat(parameters('appName'), 'devicemessages'))]"
       ]
+    },
+    {
+      "apiVersion": "2019-06-01-preview",
+      "name": "[parameters('appName')]",
+      "location": "[parameters('location')]",
+      "type": "Microsoft.Synapse/workspaces",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "defaultDataLakeStorage": {
+          "accountUrl": "[variables('defaultDataLakeStorageAccountUrl')]",
+          "filesystem": "[parameters('DeviceMessagesStorageContainerName')]"
+        },
+        "SynapseSQLAdministratorLogin": "[parameters('SynapseSQLAdministratorLogin')]",
+        "SynapseSQLAdministratorLoginPassword": "[parameters('SynapseSQLAdministratorLoginPassword')]",
+        "managedVirtualNetwork": "default"
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-06-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Synapse/workspaces/', parameters('appName'))]"
+          ],
+          "location": "[parameters('location')]",
+          "name": "allowAll",
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "255.255.255.255"
+          },
+          "type": "firewallrules"
+        },
+        {
+          "apiVersion": "2019-06-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Synapse/workspaces/', parameters('appName'))]"
+          ],
+          "location": "[parameters('location')]",
+          "name": "default",
+          "properties": {
+            "grantSqlControlToManagedIdentity": {
+              "desiredState": "Enabled"
+            }
+          },
+          "type": "managedIdentitySqlControlSettings"
+        }
+      ],
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('appName'), 'devicemessages')]"
+      ]
+    },
+    {
+      "apiVersion": "2019-05-01",
+      "name": "storageRoleDeploymentResource",
+      "type": "Microsoft.Resources/deployments",
+      "subscriptionId": "[subscription().subscriptionId]",
+      "resourceGroup": "[resourceGroup().name]",
+      "dependsOn": [
+        "[concat('Microsoft.Synapse/workspaces/', parameters('appName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+              "apiVersion": "2018-09-01-preview",
+              "name": "[concat(parameters('appName'), 'devicemessages', '/Microsoft.Authorization/',  guid(concat(resourceGroup().id, '/', variables('SynapseStorageBlobDataContributorRoleID'), '/', parameters('appName'), '/', parameters('SynapseStorageBlobDataContributorRoleUniqueID'))))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('SynapseStorageBlobDataContributorRoleID'))]",
+                "principalId": "[reference(concat('Microsoft.Synapse/workspaces/', parameters('appName')), '2019-06-01-preview', 'Full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "outputs": {
@@ -482,6 +580,14 @@
     "IoTHubDPSConnectionString": {
       "type": "string",
       "value": "[concat('HostName=', reference(resourceId('Microsoft.Devices/provisioningServices', concat(parameters('appName'), 'ProvisioningService')), providers('Microsoft.Devices', 'provisioningServices').apiVersions[0]).serviceOperationsHostName, ';SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/provisioningServices', concat(parameters('appName'), 'ProvisioningService')), providers('Microsoft.Devices', 'provisioningServices').apiVersions[0]).value[0].primaryKey)]"
+    },
+    "SynapseSQLAdministratorLogin": {
+      "type": "string",
+      "value": "[parameters('SynapseSQLAdministratorLogin')]"
+    },
+    "SynapseSQLAdministratorLoginPassword": {
+      "type": "string",
+      "value": "[parameters('SynapseSQLAdministratorLoginPassword')]"
     }
   }
 }
