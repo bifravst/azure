@@ -11,9 +11,12 @@ const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 	update: Update,
 ): Promise<void> => {
 	const doc = {
-		id: v4(),
+		messageId: v4(),
 		update,
-		systemPropertiesArray: context.bindingData.systemPropertiesArray,
+		deviceId:
+			context.bindingData.systemProperties['iothub-connection-device-id'],
+		timestamp: context.bindingData.systemProperties['iothub-enqueuedtime'],
+		source: context.bindingData.systemProperties['iothub-message-source'],
 	}
 
 	log(context)(doc)

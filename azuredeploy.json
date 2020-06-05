@@ -90,20 +90,6 @@
       "metadata": {
         "description": "The number of SignalR Unit."
       }
-    },
-    "DeviceMessagesCosmosDBDatabaseName": {
-      "type": "string",
-      "defaultValue": "deviceMessages",
-      "metadata": {
-        "description": "Name for the Cosmos DB database which stores the device messages."
-      }
-    },
-    "DeviceMessagesCosmosDBCollectionName": {
-      "type": "string",
-      "defaultValue": "update",
-      "metadata": {
-        "description": "Name for the Cosmos DB collection which represent device messages."
-      }
     }
   },
   "variables": {
@@ -112,8 +98,7 @@
     "appStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'app')]",
     "FOTAStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'fota')]",
     "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'avatars')]",
-    "IotEventHubPublishDeviceUpdatesConsumerGroup": "publishdeviceupdates",
-    "IotEventHubStoreDeviceUpdateConsumerGroup": "storedeviceupdate"
+    "DeviceMessagesCosmosDBDatabaseName": "deviceMessages"
   },
   "resources": [
     {
@@ -164,7 +149,7 @@
     {
       "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
       "apiVersion": "2020-03-01",
-      "name": "[concat(parameters('appName'), 'IotHub', '/events/', variables('IotEventHubPublishDeviceUpdatesConsumerGroup'))]",
+      "name": "[concat(parameters('appName'), 'IotHub', '/events/publishdeviceupdates')]",
       "dependsOn": [
         "[resourceId('Microsoft.Devices/IotHubs', concat(parameters('appName'), 'IotHub'))]"
       ]
@@ -172,7 +157,7 @@
     {
       "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
       "apiVersion": "2020-03-01",
-      "name": "[concat(parameters('appName'), 'IotHub', '/events/', variables('IotEventHubStoreDeviceUpdateConsumerGroup'))]",
+      "name": "[concat(parameters('appName'), 'IotHub', '/events/storedeviceupdate')]",
       "dependsOn": [
         "[resourceId('Microsoft.Devices/IotHubs', concat(parameters('appName'), 'IotHub'))]"
       ]
@@ -349,14 +334,6 @@
               "value": "[listKeys(resourceId('Microsoft.SignalRService/SignalR', concat(parameters('appName'), 'SignalR')), providers('Microsoft.SignalRService','SignalR').apiVersions[0]).primaryConnectionString]"
             },
             {
-              "name": "DeviceMessagesCosmosDBDatabaseName",
-              "value": "[parameters('DeviceMessagesCosmosDBDatabaseName')]"
-            },
-            {
-              "name": "DeviceMessagesCosmosDBCollectionName",
-              "value": "[parameters('DeviceMessagesCosmosDBCollectionName')]"
-            },
-            {
               "name": "DeviceMessagesCosmosDBConnectionString",
               "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('appName')), providers('Microsoft.DocumentDb', 'databaseAccounts').apiVersions[0]).connectionStrings[0].connectionString]"
             }
@@ -465,16 +442,67 @@
     {
       "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
       "apiVersion": "2020-03-01",
-      "name": "[concat(parameters('appName'), '/', parameters('DeviceMessagesCosmosDBDatabaseName'))]",
+      "name": "[concat(parameters('appName'), '/', variables('DeviceMessagesCosmosDBDatabaseName'))]",
       "dependsOn": [
         "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('appName'))]"
       ],
       "properties": {
         "resource": {
-          "id": "[parameters('DeviceMessagesCosmosDBDatabaseName')]"
+          "id": "[variables('DeviceMessagesCosmosDBDatabaseName')]"
         },
         "options": {
           "throughput": 400
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2020-03-01",
+      "name": "[concat(parameters('appName'), '/deviceMessages/updates')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('appName'), 'deviceMessages')]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('appName'))]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "updates",
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ],
+            "excludedPaths": [
+              {
+                "path": "/\"_etag\"/?"
+              }
+            ]
+          },
+          "partitionKey": {
+            "paths": ["/messageId"],
+            "kind": "Hash"
+          },
+          "uniqueKeyPolicy": {
+            "uniqueKeys": [
+              {
+                "paths": ["/messageId"]
+              }
+            ]
+          },
+          "conflictResolutionPolicy": {
+            "mode": "LastWriterWins",
+            "conflictResolutionPath": "/_ts"
+          },
+          "compositeIndexes": [
+            [
+              {
+                "path": "/source",
+                "order": "ascending"
+              }
+            ]
+          ]
         }
       }
     }

@@ -12,9 +12,10 @@
     {
       "name": "deviceMessage",
       "type": "cosmosDB",
-      "databaseName": "%DeviceMessagesCosmosDBDatabaseName%",
-      "collectionName": "%DeviceMessagesCosmosDBCollectionName%",
+      "databaseName": "deviceMessages",
+      "collectionName": "updates",
       "createIfNotExists": true,
+      "partitionKey": "/messageId",
       "connectionStringSetting": "DeviceMessagesCosmosDBConnectionString",
       "direction": "out"
     }
