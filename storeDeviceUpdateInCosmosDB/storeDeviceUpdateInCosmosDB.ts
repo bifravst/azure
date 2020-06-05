@@ -1,7 +1,6 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { log } from '../lib/log'
 import { Update } from '../lib/iotMessages'
-import { v4 } from 'uuid'
 
 /**
  * Store Device Twin Update in Cosmose DB SignalR so it can be queried later
@@ -11,7 +10,6 @@ const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 	update: Update,
 ): Promise<void> => {
 	const doc = {
-		messageId: v4(),
 		update,
 		deviceId:
 			context.bindingData.systemProperties['iothub-connection-device-id'],

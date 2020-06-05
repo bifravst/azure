@@ -446,15 +446,8 @@
             ]
           },
           "partitionKey": {
-            "paths": ["/messageId"],
+            "paths": ["/deviceId"],
             "kind": "Hash"
-          },
-          "uniqueKeyPolicy": {
-            "uniqueKeys": [
-              {
-                "paths": ["/messageId"]
-              }
-            ]
           },
           "conflictResolutionPolicy": {
             "mode": "LastWriterWins",

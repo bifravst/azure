@@ -15,7 +15,7 @@
       "databaseName": "deviceMessages",
       "collectionName": "updates",
       "createIfNotExists": true,
-      "partitionKey": "/messageId",
+      "partitionKey": "/deviceId",
       "connectionStringSetting": "DeviceMessagesCosmosDBConnectionString",
       "direction": "out"
     }
