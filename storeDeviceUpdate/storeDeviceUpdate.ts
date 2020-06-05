@@ -9,7 +9,7 @@ import {
 
 const fotaStorageAccountName = process.env.FOTA_STORAGE_ACCOUNT_NAME ?? ''
 const fotaStorageAccessKey = process.env.FOTA_STORAGE_ACCESS_KEY ?? ''
-const fotaStorageContainer = process.env.FOTA_STORAGE_CONTAINER ?? ''
+const fotaStorageContainer = 'updates'
 
 const sharedKeyCredential = new StorageSharedKeyCredential(
 	fotaStorageAccountName,

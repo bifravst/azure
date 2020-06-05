@@ -306,20 +306,12 @@
               "value": "[listKeys(variables('avatarStorageAccountId'), '2019-04-01').keys[0].value]"
             },
             {
-              "name": "AVATAR_STORAGE_CONTAINER",
-              "value": "[parameters('AvatarStorageContainerName')]"
-            },
-            {
               "name": "FOTA_STORAGE_ACCOUNT_NAME",
               "value": "[concat(parameters('appName'), 'fota')]"
             },
             {
               "name": "FOTA_STORAGE_ACCESS_KEY",
               "value": "[listKeys(variables('FOTAStorageAccountId'), '2019-04-01').keys[0].value]"
-            },
-            {
-              "name": "FOTA_STORAGE_CONTAINER",
-              "value": "[parameters('FOTAStorageContainerName')]"
             },
             {
               "name": "IoTHubEventHubCompatibleConnectionString",

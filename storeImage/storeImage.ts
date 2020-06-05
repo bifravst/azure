@@ -7,9 +7,9 @@ import {
 } from '@azure/storage-blob'
 import { log } from '../lib/log'
 
-const avatarStorageAccountName = process.env.AVATAR_STORAGE_ACCOUNT_NAME || ''
-const avatarStorageAccessKey = process.env.AVATAR_STORAGE_ACCESS_KEY || ''
-const avatarStorageContainer = process.env.AVATAR_STORAGE_CONTAINER || ''
+const avatarStorageAccountName = process.env.AVATAR_STORAGE_ACCOUNT_NAME ?? ''
+const avatarStorageAccessKey = process.env.AVATAR_STORAGE_ACCESS_KEY ?? ''
+const avatarStorageContainer = 'avatars'
 
 const sharedKeyCredential = new StorageSharedKeyCredential(
 	avatarStorageAccountName,
@@ -27,7 +27,7 @@ const storeImage: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
-	const { body, rawBody, ...rest } = req
+	const { body, ...rest } = req
 	log(context)({
 		req: rest,
 		avatarStorageAccountName,
