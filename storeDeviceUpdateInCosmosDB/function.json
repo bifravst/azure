@@ -16,7 +16,7 @@
       "collectionName": "updates",
       "createIfNotExists": true,
       "partitionKey": "/deviceId",
-      "connectionStringSetting": "DeviceMessagesCosmosDBConnectionString",
+      "connectionStringSetting": "HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING",
       "direction": "out"
     }
   ],
