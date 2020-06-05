@@ -90,6 +90,20 @@
       "metadata": {
         "description": "The number of SignalR Unit."
       }
+    },
+    "DeviceMessagesCosmosDBDatabaseName": {
+      "type": "string",
+      "defaultValue": "deviceMessages",
+      "metadata": {
+        "description": "Name for the Cosmos DB database which stores the device messages."
+      }
+    },
+    "DeviceMessagesCosmosDBCollectionName": {
+      "type": "string",
+      "defaultValue": "update",
+      "metadata": {
+        "description": "Name for the Cosmos DB collection which represent device messages."
+      }
     }
   },
   "variables": {
@@ -97,7 +111,9 @@
     "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', concat(parameters('appName'), 'IotHub'), 'iothubowner')]",
     "appStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'app')]",
     "FOTAStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'fota')]",
-    "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'avatars')]"
+    "avatarStorageAccountId": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('appName'), 'avatars')]",
+    "IotEventHubPublishDeviceUpdatesConsumerGroup": "publishdeviceupdates",
+    "IotEventHubStoreDeviceUpdateConsumerGroup": "storedeviceupdate"
   },
   "resources": [
     {
@@ -122,30 +138,44 @@
           }
         },
         "routing": {
-          "endpoints": {
-            "routes": [
-              {
-                "name": "twinChangeEventsToEventHub",
-                "source": "TwinChangeEvents",
-                "condition": "true",
-                "endpointNames": ["events"],
-                "isEnabled": true
-              },
-              {
-                "name": "twinMessagesToEventHub",
-                "source": "DeviceMessages",
-                "condition": "true",
-                "endpointNames": ["events"],
-                "isEnabled": true
-              }
-            ]
-          }
+          "routes": [
+            {
+              "name": "twinChangeEventsToEventHub",
+              "source": "TwinChangeEvents",
+              "condition": "true",
+              "endpointNames": ["events"],
+              "isEnabled": true
+            },
+            {
+              "name": "twinMessagesToEventHub",
+              "source": "DeviceMessages",
+              "condition": "true",
+              "endpointNames": ["events"],
+              "isEnabled": true
+            }
+          ]
         }
       },
       "sku": {
         "name": "[parameters('iotHubSkuName')]",
         "capacity": "[parameters('capacityUnits')]"
       }
+    },
+    {
+      "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
+      "apiVersion": "2020-03-01",
+      "name": "[concat(parameters('appName'), 'IotHub', '/events/', variables('IotEventHubPublishDeviceUpdatesConsumerGroup'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Devices/IotHubs', concat(parameters('appName'), 'IotHub'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
+      "apiVersion": "2020-03-01",
+      "name": "[concat(parameters('appName'), 'IotHub', '/events/', variables('IotEventHubStoreDeviceUpdateConsumerGroup'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Devices/IotHubs', concat(parameters('appName'), 'IotHub'))]"
+      ]
     },
     {
       "type": "Microsoft.Devices/provisioningServices",
@@ -317,6 +347,18 @@
             {
               "name": "SignalRConnectionString",
               "value": "[listKeys(resourceId('Microsoft.SignalRService/SignalR', concat(parameters('appName'), 'SignalR')), providers('Microsoft.SignalRService','SignalR').apiVersions[0]).primaryConnectionString]"
+            },
+            {
+              "name": "DeviceMessagesCosmosDBDatabaseName",
+              "value": "[parameters('DeviceMessagesCosmosDBDatabaseName')]"
+            },
+            {
+              "name": "DeviceMessagesCosmosDBCollectionName",
+              "value": "[parameters('DeviceMessagesCosmosDBCollectionName')]"
+            },
+            {
+              "name": "DeviceMessagesCosmosDBConnectionString",
+              "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('appName')), providers('Microsoft.DocumentDb', 'databaseAccounts').apiVersions[0]).connectionStrings[0].connectionString]"
             }
           ],
           "use32BitWorkerProcess": false,
@@ -406,6 +448,35 @@
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', concat(parameters('appName'), 'fota'))]"
       ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2020-03-01",
+      "name": "[parameters('appName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "enableFreeTier": true,
+        "databaseAccountOfferType": "Standard",
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2020-03-01",
+      "name": "[concat(parameters('appName'), '/', parameters('DeviceMessagesCosmosDBDatabaseName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('appName'))]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "[parameters('DeviceMessagesCosmosDBDatabaseName')]"
+        },
+        "options": {
+          "throughput": 400
+        }
+      }
     }
   ],
   "outputs": {

@@ -6,7 +6,8 @@
       "name": "updates",
       "cardinality": "many",
       "eventHubName": "%IoTHubEventHubName%",
-      "connection": "IoTHubEventHubCompatibleConnectionString"
+      "connection": "IoTHubEventHubCompatibleConnectionString",
+      "consumerGroup": "publishdeviceupdates"
     },
     {
       "type": "signalR",

@@ -1,23 +1,6 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { log } from '../lib/log'
-
-type TwinChangeEvent = {
-	version: number
-	tags?: { [key: string]: any }
-	properties?: {
-		desired?: { [key: string]: any }
-		reported?: { [key: string]: any }
-	}
-}
-
-type DeviceMessage = {
-	[key: string]: {
-		v: any
-		ts: number
-	}
-}
-
-type Update = TwinChangeEvent | DeviceMessage
+import { Update, TwinChangeEvent } from '../lib/iotMessages'
 
 /**
  * Publishes Device Twin Update to SignalR so the web application can receive real-time notifications

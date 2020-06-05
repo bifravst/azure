@@ -1,0 +1,23 @@
+{
+  "bindings": [
+    {
+      "type": "eventHubTrigger",
+      "direction": "in",
+      "name": "update",
+      "eventHubName": "%IoTHubEventHubName%",
+      "cardinality": "one",
+      "connection": "IoTHubEventHubCompatibleConnectionString",
+      "consumerGroup": "storedeviceupdate"
+    },
+    {
+      "name": "deviceMessage",
+      "type": "cosmosDB",
+      "databaseName": "%DeviceMessagesCosmosDBDatabaseName%",
+      "collectionName": "%DeviceMessagesCosmosDBCollectionName%",
+      "createIfNotExists": true,
+      "connectionStringSetting": "DeviceMessagesCosmosDBConnectionString",
+      "direction": "out"
+    }
+  ],
+  "scriptFile": "../dist/storeDeviceUpdateInCosmosDB/storeDeviceUpdateInCosmosDB.js"
+}
