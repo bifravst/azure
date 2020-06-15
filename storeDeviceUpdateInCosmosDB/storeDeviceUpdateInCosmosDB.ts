@@ -1,16 +1,16 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { log } from '../lib/log'
-import { Update } from '../lib/iotMessages'
+import { DeviceUpdate } from '../lib/iotMessages'
 
 /**
- * Store Device Twin Update in Cosmose DB SignalR so it can be queried later
+ * Store Device Twin Update in Cosmos DB so it can be queried later
  */
 const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 	context: Context,
-	update: Update,
+	update: DeviceUpdate,
 ): Promise<void> => {
 	const doc = {
-		update,
+		deviceUpdate: update,
 		deviceId:
 			context.bindingData.systemProperties['iothub-connection-device-id'],
 		timestamp: context.bindingData.systemProperties['iothub-enqueuedtime'],
@@ -19,7 +19,7 @@ const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 
 	log(context)(doc)
 
-	context.bindings.deviceMessage = JSON.stringify(doc)
+	context.bindings.deviceUpdate = JSON.stringify(doc)
 
 	context.done()
 }

@@ -1,13 +1,13 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { log } from '../lib/log'
-import { Update, TwinChangeEvent } from '../lib/iotMessages'
+import { DeviceUpdate, TwinChangeEvent } from '../lib/iotMessages'
 
 /**
  * Publishes Device Twin Update to SignalR so the web application can receive real-time notifications
  */
 const publishDeviceUpdatesToSignalR: AzureFunction = async (
 	context: Context,
-	updates: Update[],
+	updates: DeviceUpdate[],
 ): Promise<void> => {
 	log(context)({
 		messages: updates,
@@ -16,7 +16,7 @@ const publishDeviceUpdatesToSignalR: AzureFunction = async (
 
 	const signalRMessages = []
 
-	const addProperties = (message: Update, k: number) => ({
+	const addProperties = (message: DeviceUpdate, k: number) => ({
 		message,
 		systemProperties: context.bindingData.systemPropertiesArray[k],
 	})

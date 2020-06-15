@@ -1,16 +1,16 @@
 {
   "bindings": [
     {
+      "name": "update",
       "type": "eventHubTrigger",
       "direction": "in",
-      "name": "update",
       "eventHubName": "%IoTHubEventHubName%",
       "cardinality": "one",
       "connection": "IoTHubEventHubCompatibleConnectionString",
       "consumerGroup": "storedeviceupdate"
     },
     {
-      "name": "deviceMessage",
+      "name": "deviceUpdate",
       "type": "cosmosDB",
       "databaseName": "deviceMessages",
       "collectionName": "updates",

@@ -14,4 +14,4 @@ export type DeviceMessage = {
 	}
 }
 
-export type Update = TwinChangeEvent | DeviceMessage
+export type DeviceUpdate = TwinChangeEvent | DeviceMessage
