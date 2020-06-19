@@ -7,7 +7,8 @@ env:
   AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
   LOCATION: northeurope
-  APP_NAME: bifravst
+  RESOURCE_GROUP_NAME: bifravst
+  APP_NAME: bifravstcd
 
 jobs:
   deploy:
@@ -37,7 +38,7 @@ jobs:
       - run: |
           export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`
           az deployment group create \
-            --resource-group $APP_NAME \
+            --resource-group $RESOURCE_GROUP_NAME \
             --mode Complete \
             --name $APP_NAME \
             --template-file azuredeploy.json \
