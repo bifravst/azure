@@ -35,7 +35,7 @@ jobs:
         run: npm ci --no-audit
       - run: npx tsc
       - run: |
-          export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`s
+          export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`
           az deployment group create \
             --resource-group $APP_NAME \
             --mode Complete \
