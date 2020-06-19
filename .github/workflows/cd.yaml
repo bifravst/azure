@@ -36,6 +36,7 @@ jobs:
       - run: npx tsc
       - run: |
           export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`
+          export SUBSCRIPTION_ID=`echo $AZURE_CREDENTIALS | jq -r '.subscriptionId' | tr -d '\n'`
           az provider register --subscription $SUBSCRIPTION_ID --namespace Microsoft.Storage
           az deployment group create \
             --resource-group $APP_NAME \
