@@ -1,0 +1,37 @@
+name: Continuous Deployment
+
+env:
+  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  LOCATION: northeurope
+  APP_NAME: bifravst
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+      - name: Keep npm cache around to speed up installs
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci --no-audit
+      - run: npx tsc
+      - run: |
+          export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`
+          az deployment group create \
+            --resource-group $APP_NAME \
+            --mode Complete \
+            --name $APP_NAME \
+            --template-file azuredeploy.json \
+            --parameters \
+              appName=$APP_NAME \
+              location=$LOCATION \
+              appRegistrationClientId=$APP_REG_CLIENT_ID \
+              tenantId=$TENANT_ID
+          func azure functionapp publish ${APP_NAME}website --typescript
