@@ -58,7 +58,7 @@ jobs:
           az storage blob service-properties update --auth-mode login
           --account-name ${APP_NAME}app --static-website --404-document 404.html
           --index-document index.html
-      - name: Deploy app
+      - name: Build app
         run: |
           export REACT_APP_CLOUD_FLAVOUR=AZURE
           export REACT_APP_AZURE_REDIRECT_URI=https://${APP_NAME}app.azurewebsites.net/
@@ -68,4 +68,7 @@ jobs:
           cd app
           npm ci
           npm run build
-          az storage blob upload-batch --account-name ${APP_NAME} -s ./build -d '$web'
+      - name: Publish app
+        run:
+          az storage blob upload-batch --auth-mode login --account-name
+          ${APP_NAME}app -s ./build -d '$web'
