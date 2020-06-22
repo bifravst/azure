@@ -47,4 +47,4 @@ jobs:
               location=$LOCATION \
               appRegistrationClientId=$APP_REG_CLIENT_ID \
               tenantId=$TENANT_ID
-          func azure functionapp publish ${APP_NAME}website --typescript
+      - run: func azure functionapp publish ${APP_NAME}website --typescript
