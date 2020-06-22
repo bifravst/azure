@@ -9,6 +9,7 @@ env:
   LOCATION: northeurope
   RESOURCE_GROUP_NAME: bifravst
   APP_NAME: bifravstcd
+  APP_STORAGE_CONNECTION_STRING: ${{ secrets.APP_STORAGE_CONNECTION_STRING }}
 
 jobs:
   deploy:
@@ -70,5 +71,6 @@ jobs:
           npm run build
       - name: Publish app
         run:
-          az storage blob upload-batch --auth-mode login --account-name
-          ${APP_NAME}app -s ./app/build -d '$web'
+          az storage blob upload-batch --connection-string
+          ${APP_STORAGE_CONNECTION_STRING} --account-name ${APP_NAME}app -s
+          ./app/build -d '$web'
