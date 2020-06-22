@@ -71,4 +71,4 @@ jobs:
       - name: Publish app
         run:
           az storage blob upload-batch --auth-mode login --account-name
-          ${APP_NAME}app -s ./build -d '$web'
+          ${APP_NAME}app -s ./app/build -d '$web'
