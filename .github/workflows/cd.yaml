@@ -58,15 +58,17 @@ jobs:
           az storage blob service-properties update --auth-mode login
           --account-name ${APP_NAME}app --static-website --404-document 404.html
           --index-document index.html
-      - name: Determine Web App URL
+      - name: Determine Web App endpoints
         run: |
+          REACT_APP_AZURE_API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}website -query 'defaultHostName'`/
           REACT_APP_AZURE_REDIRECT_URI=`az storage account show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}app --query 'primaryEndpoints.web'`
           echo "::set-env name=REACT_APP_AZURE_REDIRECT_URI::${REACT_APP_AZURE_REDIRECT_URI}"
+          echo "::set-env name=REACT_APP_AZURE_API_ENDPOINT::${REACT_APP_AZURE_API_ENDPOINT}"
       - name: Build app
         run: |
+          echo Hosting at ${{ env.REACT_APP_AZURE_API_ENDPOINT }}
+          echo API at ${{ env.REACT_APP_AZURE_REDIRECT_URI }}
           export REACT_APP_CLOUD_FLAVOUR=AZURE
-          echo Hosting at ${{ env.REACT_APP_AZURE_REDIRECT_URI }}
-          export REACT_APP_AZURE_API_ENDPOINT=https://${APP_NAME}website.azurewebsites.net/
           export REACT_APP_AZURE_AD_B2C_AUTHORITY=https://${APP_NAME}.b2clogin.com/${APP_NAME}.onmicrosoft.com/B2C_1_signup_signin
           git clone https://github.com/bifravst/app
           cd app
