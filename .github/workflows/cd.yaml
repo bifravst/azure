@@ -60,14 +60,14 @@ jobs:
           --index-document index.html
       - name: Determine Web App endpoints
         run: |
-          REACT_APP_AZURE_API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}website --query 'defaultHostName'`/
-          REACT_APP_AZURE_REDIRECT_URI=`az storage account show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}app --query 'primaryEndpoints.web'`
+          REACT_APP_AZURE_API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}website --query 'defaultHostName' --output tsv | tr -d '\n'`/
+          REACT_APP_AZURE_REDIRECT_URI=`az storage account show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}app --query 'primaryEndpoints.web' --output tsv | tr -d '\n'`
           echo "::set-env name=REACT_APP_AZURE_REDIRECT_URI::${REACT_APP_AZURE_REDIRECT_URI}"
           echo "::set-env name=REACT_APP_AZURE_API_ENDPOINT::${REACT_APP_AZURE_API_ENDPOINT}"
       - name: Build app
         run: |
-          echo Hosting at ${{ env.REACT_APP_AZURE_API_ENDPOINT }}
-          echo API at ${{ env.REACT_APP_AZURE_REDIRECT_URI }}
+          echo Hosting at ${{ env.REACT_APP_AZURE_REDIRECT_URI }}
+          echo API at ${{ env.REACT_APP_AZURE_API_ENDPOINT }}
           export REACT_APP_CLOUD_FLAVOUR=AZURE
           export REACT_APP_AZURE_AD_B2C_AUTHORITY=https://${APP_NAME}.b2clogin.com/${APP_NAME}.onmicrosoft.com/B2C_1_signup_signin
           git clone https://github.com/bifravst/app
