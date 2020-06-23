@@ -6,6 +6,7 @@ on:
       - Dockerfile
       - .github/workflows/test-docker.yaml
       - .github/workflows/publish-docker.yaml
+      - .github/workflows/cd.yaml
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
