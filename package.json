@@ -38,8 +38,8 @@
     "azure-iothub": "^1.12.3",
     "deepmerge": "^4.1.1",
     "mqtt": "^4.1.0",
-    "snyk": "^1.346.0",
-    "uuid": "^8.1.0"
+    "snyk": "^1.348.1",
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
     "@azure/arm-deviceprovisioningservices": "^2.1.0",
@@ -47,14 +47,14 @@
     "@bifravst/code-style": "^8.0.2",
     "@commitlint/cli": "^9.0.1",
     "@commitlint/config-angular": "^9.0.1",
-    "@types/jest": "^26.0.0",
+    "@types/jest": "^26.0.1",
     "@types/jsonwebtoken": "^8.5.0",
-    "@types/node": "^14.0.13",
+    "@types/node": "^14.0.14",
     "@types/pem": "^1.9.5",
     "@types/uuid": "^8.0.0",
     "check-node-version": "^4.0.3",
     "husky": "^4.2.5",
-    "jest": "^26.0.1",
+    "jest": "^26.1.0",
     "pem": "^1.14.4",
     "run-node": "^2.0.0",
     "ts-jest": "^26.1.1",
