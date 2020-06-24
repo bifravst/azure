@@ -8,7 +8,7 @@ env:
   APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
   LOCATION: northeurope
   RESOURCE_GROUP_NAME: bifravstprod
-  APP_NAME: bifravstprodapp
+  APP_NAME: bifravstprod
   B2C_TENANT: bifravstprod
 
 jobs:
