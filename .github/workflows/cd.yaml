@@ -7,9 +7,9 @@ env:
   AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
   LOCATION: northeurope
-  RESOURCE_GROUP_NAME: bifravst
-  APP_NAME: bifravstcd
-  B2C_TENANT: bifravstcdapp
+  RESOURCE_GROUP_NAME: bifravstprod
+  APP_NAME: bifravstprodapp
+  B2C_TENANT: bifravstprod
 
 jobs:
   deploy:
