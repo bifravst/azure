@@ -8,7 +8,6 @@ import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from '@azure/ms-rest-nodeauth'
 import { createDeviceCertCommand } from './commands/create-device-cert'
 import { connectCommand } from './commands/connect'
-import { run } from './process/run'
 import { proofCARootPossessionCommand } from './commands/proof-ca-possession'
 import { createCAIntermediateCommand } from './commands/create-ca-intermediate'
 import {
@@ -16,34 +15,56 @@ import {
 	resourceGroupName,
 	deploymentName,
 } from '../arm/resources'
+import fetch from 'node-fetch'
 
 const version = JSON.parse(
 	fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'),
 ).version
 
 const ioTHubDPSConnectionString = ({
-	deploymentName,
 	resourceGroupName,
+	credentials,
 }: {
 	deploymentName: string
 	resourceGroupName: string
-}) => async () =>
-	(
-		await run({
-			command: 'az',
-			args: [
-				'group',
-				'deployment',
-				'show',
-				'-g',
-				resourceGroupName,
-				'-n',
-				deploymentName,
-				'--query',
-				'properties.outputs.ioTHubDPSConnectionString.value',
-			],
-		})
-	).replace(/"/g, '')
+	credentials: () => Promise<AzureCliCredentials>
+}) => async (): Promise<string> => {
+	const creds = await credentials()
+	const subscriptionId = creds.tokenInfo.subscription
+	const token = await creds.getToken()
+
+	return Promise.all([
+		fetch(
+			`https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Devices/provisioningServices/${resourceGroupName}ProvisioningService/listkeys?api-version=2018-01-22`,
+			{
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token.accessToken}`,
+					'Content-type': `application/json`,
+				},
+			},
+		),
+		fetch(
+			`https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Devices/provisioningServices/${resourceGroupName}ProvisioningService?api-version=2018-01-22`,
+			{
+				headers: {
+					Authorization: `Bearer ${token.accessToken}`,
+					'Content-type': `application/json`,
+				},
+			},
+		),
+	])
+		.then(async (res) => Promise.all(res.map(async (r) => r.json())))
+		.then(
+			([
+				{ value },
+				{
+					properties: { serviceOperationsHostName },
+				},
+			]) =>
+				`HostName=${serviceOperationsHostName};SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=${value[0].primaryKey}`,
+		)
+}
 
 const creds = async () => {
 	const creds = await AzureCliCredentials.create()
@@ -52,7 +73,11 @@ const creds = async () => {
 		tokenInfo: { subscription },
 	} = creds
 
-	console.log(chalk.magenta('Subscription ID:'), chalk.yellow(subscription))
+	console.log(chalk.magenta('Subscription:'), chalk.yellow(subscription))
+	console.log(
+		chalk.magenta('Resource Group:'),
+		chalk.yellow(resourceGroupName()),
+	)
 
 	return creds
 }
@@ -60,7 +85,7 @@ const creds = async () => {
 let currentCreds: Promise<AzureCliCredentials>
 
 const getCurrentCreds = async () => {
-	if (!currentCreds) currentCreds = creds()
+	if (currentCreds === undefined) currentCreds = creds()
 	return currentCreds
 }
 
@@ -74,6 +99,7 @@ const bifravstCLI = async () => {
 	const getIotHubConnectionString = ioTHubDPSConnectionString({
 		resourceGroupName: resourceGroup,
 		deploymentName: deployment,
+		credentials: getCurrentCreds,
 	})
 	const getIotDpsClient = async () =>
 		getCurrentCreds().then(
@@ -102,7 +128,6 @@ const bifravstCLI = async () => {
 		createCAIntermediateCommand({
 			certsDir,
 			ioTHubDPSConnectionString: getIotHubConnectionString,
-			iotDpsClient: getIotDpsClient,
 		}),
 		createDeviceCertCommand({
 			iotClient: getIotClient,
@@ -112,6 +137,7 @@ const bifravstCLI = async () => {
 			iotDpsClient: getIotDpsClient,
 			certsDir,
 			version,
+			resourceGroup,
 		}),
 	]
 

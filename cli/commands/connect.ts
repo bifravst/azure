@@ -18,10 +18,12 @@ export const connectCommand = ({
 	certsDir,
 	iotDpsClient,
 	version,
+	resourceGroup,
 }: {
 	iotDpsClient: () => Promise<IotDpsClient>
 	certsDir: string
 	version: string
+	resourceGroup: string
 }): ComandDefinition => ({
 	command: 'connect <deviceId>',
 	action: async (deviceId: string) => {
@@ -72,8 +74,8 @@ export const connectCommand = ({
 
 			const armDpsClient = await iotDpsClient()
 			const dps = await armDpsClient.iotDpsResource.get(
-				'bifravstProvisioningService',
-				'bifravst',
+				`${resourceGroup}ProvisioningService`,
+				resourceGroup,
 			)
 			const dpsHostname = dps.properties.serviceOperationsHostName as string
 			const idScope = dps.properties.idScope as string
