@@ -1,0 +1,100 @@
+name: Continuous Deployment
+
+on:
+  push:
+
+env:
+  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
+  LOCATION: northeurope
+  RESOURCE_GROUP_NAME: bifravstprod
+  APP_NAME: bifravstprod
+  B2C_TENANT: bifravstprod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Determine Version
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          TAG=`git tag --contains ${{ github.sha }} | tr -d '\n'`
+          VERSION=${TAG:-${{ github.sha }}}
+          echo Version: ${VERSION}
+          echo "::set-env name=VERSION::${VERSION}"
+      - name: Install Azure CLI
+        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      - name: Install Azures Functions CLI
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+          sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
+          sudo apt-get update
+          sudo apt-get install azure-functions-core-tools
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+      - name: Keep npm cache around to speed up installs
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci --no-audit
+      - run: npx tsc
+      - run: |
+          export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`
+          az deployment group create \
+            --resource-group $RESOURCE_GROUP_NAME \
+            --mode Complete \
+            --name ${{ env.VERSION }} \
+            --template-file azuredeploy.json \
+            --parameters \
+              appName=$APP_NAME \
+              location=$LOCATION \
+              appRegistrationClientId=$APP_REG_CLIENT_ID \
+              tenantId=$TENANT_ID
+      - run: func azure functionapp publish ${APP_NAME}api --typescript
+      - name: Enable static site hosting for the app
+        run:
+          az storage blob service-properties update --auth-mode login
+          --account-name ${APP_NAME}app --static-website --404-document
+          index.html --index-document index.html
+      - name: Determine Web App endpoints
+        run: |
+          REACT_APP_AZURE_API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
+          REACT_APP_AZURE_REDIRECT_URI=`az storage account show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}app --query 'primaryEndpoints.web' --output tsv | tr -d '\n'`
+          echo "::set-env name=REACT_APP_AZURE_REDIRECT_URI::${REACT_APP_AZURE_REDIRECT_URI}"
+          echo "::set-env name=REACT_APP_AZURE_API_ENDPOINT::${REACT_APP_AZURE_API_ENDPOINT}"
+      - name: Build app
+        run: |
+          echo Hosting at ${{ env.REACT_APP_AZURE_REDIRECT_URI }}
+          echo API at ${{ env.REACT_APP_AZURE_API_ENDPOINT }}
+          export REACT_APP_CLOUD_FLAVOUR=AZURE
+          export REACT_APP_AZURE_AD_B2C_TENANT=${{ env.B2C_TENANT }}
+          export REACT_APP_AZURE_CLIENT_ID=${{ env.APP_REG_CLIENT_ID }}
+          git clone https://github.com/bifravst/app
+          cd app
+          APP_TAG=`git tag --points-at HEAD | tr -d '\n'`
+          APP_SHA=`git log -n 1 --pretty=format:"%H" | tr -d '\n'`
+          export REACT_APP_VERSION=${APP_TAG:-${APP_SHA}}
+          npm ci
+          npm run build
+      - name: Publish app
+        run: |
+          export APP_STORAGE_CONNECTION_STRING=`az storage account show-connection-string --name ${APP_NAME}app --query 'connectionString'` 
+          az storage blob upload-batch --connection-string ${APP_STORAGE_CONNECTION_STRING} --account-name ${APP_NAME}app -s ./app/build -d '$web'
+      - name: Success
+        if: success()
+        uses: zattoo/deploy-status@v1
+        with:
+          token: ${{ github.token }}
+          environment: production
+          environment_url: ${{ env.REACT_APP_AZURE_REDIRECT_URI }}
+          state: success

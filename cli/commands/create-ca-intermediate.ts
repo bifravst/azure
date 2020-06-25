@@ -2,7 +2,6 @@ import chalk from 'chalk'
 import { ComandDefinition } from './CommandDefinition'
 import { generateCAIntermediate } from '../iot/generateCAIntermediate'
 import { ProvisioningServiceClient } from 'azure-iot-provisioning-service'
-import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { add as addToIntermediateRegistry } from '../iot/intermediateRegistry'
 import { v4 } from 'uuid'
 import { log, debug } from '../logging'
@@ -13,7 +12,6 @@ export const createCAIntermediateCommand = ({
 }: {
 	certsDir: string
 	ioTHubDPSConnectionString: () => Promise<string>
-	iotDpsClient: () => Promise<IotDpsClient>
 }): ComandDefinition => ({
 	command: 'create-ca-intermediate',
 	action: async () => {
@@ -80,7 +78,7 @@ export const createCAIntermediateCommand = ({
 
 		console.log(
 			chalk.green('You can now generate device certificates using'),
-			chalk.blueBright('node cli generate-device-cert'),
+			chalk.blueBright('node cli create-device-cert'),
 		)
 	},
 	help:

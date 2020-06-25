@@ -222,7 +222,7 @@
     {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2019-08-01",
-      "name": "[concat(parameters('appName'), 'WebSite')]",
+      "name": "[concat(parameters('appName'), 'API')]",
       "location": "[parameters('location')]",
       "kind": "functionapp",
       "identity": {
@@ -248,7 +248,7 @@
             },
             {
               "name": "WEBSITE_CONTENTSHARE",
-              "value": "[toLower(concat(parameters('appName'), 'WebSite'))]"
+              "value": "[toLower(concat(parameters('appName'), 'API'))]"
             },
             {
               "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -319,7 +319,7 @@
           "name": "web",
           "type": "config",
           "dependsOn": [
-            "[concat('Microsoft.Web/Sites/', concat(parameters('appName'), 'WebSite'))]"
+            "[concat('Microsoft.Web/Sites/', concat(parameters('appName'), 'API'))]"
           ],
           "properties": {
             "siteAuthEnabled": true,
