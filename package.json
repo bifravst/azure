@@ -6,7 +6,8 @@
     "postinstall": "check-node-version --package",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",
-    "test": "jest"
+    "test": "jest",
+    "test:e2e": "node dist/feature-runner/run-features.js ./features --print-results --progress"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,7 @@
     "@bifravst/random-words": "^4.2.0",
     "azure-iot-provisioning-service": "^1.8.4",
     "azure-iothub": "^1.12.4",
+    "chalk": "^4.1.0",
     "deepmerge": "^4.1.1",
     "mqtt": "^4.1.0",
     "node-fetch": "^2.6.0",
@@ -46,9 +48,11 @@
     "@azure/arm-deviceprovisioningservices": "^2.1.0",
     "@azure/functions": "^1.2.2",
     "@bifravst/code-style": "^8.0.23",
+    "@bifravst/e2e-bdd-test-runner": "^2.0.0",
     "@commitlint/cli": "^9.1.1",
     "@commitlint/config-angular": "^9.1.1",
     "@types/chalk": "^2.2.0",
+    "@types/commander": "^2.12.2",
     "@types/jest": "^26.0.9",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/node": "^14.0.27",
@@ -56,6 +60,7 @@
     "@types/uuid": "^8.0.1",
     "chalk": "^4.1.0",
     "check-node-version": "^4.0.3",
+    "commander": "^6.0.0",
     "husky": "^4.2.5",
     "jest": "^26.2.2",
     "pem": "^1.14.4",
