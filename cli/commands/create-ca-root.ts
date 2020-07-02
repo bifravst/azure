@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import { ComandDefinition } from './CommandDefinition'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { generateProofOfPosession } from '../iot/generateProofOfPosession'
@@ -63,7 +63,7 @@ export const createCARootCommand = ({
 			dpsName,
 		)
 
-		if (!properties?.verificationCode) {
+		if (properties?.verificationCode === undefined) {
 			throw new Error(`Failed to generate verification code`)
 		}
 

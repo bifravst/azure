@@ -1,7 +1,7 @@
 import { ComandDefinition } from './CommandDefinition'
 import { deviceFileLocations } from '../iot/deviceFileLocations'
 import { promises as fs } from 'fs'
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { connect } from 'mqtt'
 import { v4 } from 'uuid'

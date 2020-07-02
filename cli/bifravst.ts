@@ -1,5 +1,5 @@
 import * as program from 'commander'
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import * as path from 'path'
 import * as fs from 'fs'
 import { createCARootCommand } from './commands/create-ca-root'
