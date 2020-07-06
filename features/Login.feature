@@ -12,3 +12,4 @@ Feature: Login
         Given I have a random email in "userEmail"
         And I have a random password in "userPassword"
         And an Azure AD B2C user exists with the email "{userEmail}" and the password "{userPassword}"
+        When I log in as the Azure AD B2C user "{userEmail}" with the password "{userPassword}" and store the access token in "accessToken"

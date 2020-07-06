@@ -3,6 +3,7 @@
 
 import fetch from 'node-fetch'
 import { URLSearchParams } from 'url'
+import { handleErrorResponse } from './handleResponse'
 
 /**
  * Generates a client level access token which can be used to interact with the Graph API
@@ -28,17 +29,18 @@ export const getClientAccessToken = async ({
 			}),
 		},
 	)
+	await handleErrorResponse(res)
 	const data = await res.json()
 	return data.access_token
 }
 
 export const getUserAccessToken = async ({
-	username,
+	email,
 	password,
 	b2cTenant,
 	clientId,
 }: {
-	username: string
+	email: string
 	password: string
 	b2cTenant: string
 	clientId: string
@@ -54,7 +56,7 @@ export const getUserAccessToken = async ({
 		{
 			method: 'POST',
 			body: new URLSearchParams({
-				username,
+				username: email,
 				password,
 				grant_type: 'password',
 				client_id: clientId,
@@ -63,6 +65,7 @@ export const getUserAccessToken = async ({
 			}),
 		},
 	)
+	await handleErrorResponse(res)
 	const data = await res.json()
 	return data.access_token
 }

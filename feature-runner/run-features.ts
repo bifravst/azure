@@ -5,58 +5,89 @@ import {
 } from '@bifravst/e2e-bdd-test-runner'
 import * as program from 'commander'
 import * as chalk from 'chalk'
-import { v4 } from 'uuid'
+import { randomEmail } from './lib/randomEmail'
+import { randomPassword } from './lib/randomPassword'
+import { b2cSteps } from './steps/b2c'
+import { fromEnv } from './lib/fromEnv'
 
 let ran = false
 
-type BifravstWorld = {
-	subscriptionId: string
-	resourceGroup: string
-}
+type BifravstWorld = Record<string, string>
 
 program
 	.arguments('<featureDir>')
 	.option('-r, --print-results', 'Print results')
 	.option('-p, --progress', 'Print progress')
 	.option('-X, --no-retry', 'Do not retry steps')
-	.option(
-		'-s, --subscription <subscription>',
-		'Subscription ID',
-		process.env.SUBSCRIPTION_ID,
-	)
-	.option(
-		'-r, --resource-group <resource-group>',
-		'Resource group name',
-		process.env.RESOURCE_GROUP_NAME ?? 'bifravst',
-	)
 	.action(
 		async (
 			featureDir: string,
 			{
 				printResults,
-				subscription: subscriptionId,
-				resourceGroup,
 				progress,
 				retry,
 			}: {
 				printResults: boolean
 				subscription: string
-				resourceGroup: string
 				progress: boolean
 				retry: boolean
 			},
 		) => {
 			ran = true
 
-			const world: BifravstWorld = {
+			const world: BifravstWorld = {} as const
+
+			const {
+				b2cTenant,
+				clientId,
+				clientSecret,
+				tenantId,
+				ropcClientId,
 				subscriptionId,
 				resourceGroup,
-			} as const
+			} = fromEnv({
+				b2cTenant: 'B2C_TENANT',
+				clientId: 'E2E_AD_B2C_CLIENT_ID',
+				clientSecret: 'E2E_AD_B2C_CLIENT_SECRET',
+				tenantId: 'E2E_AD_B2C_TENANT_ID',
+				ropcClientId: 'E2E_AD_B2C_ROPC_CLIENT_ID',
+				subscriptionId: 'SUBSCRIPTION_ID',
+				resourceGroup: 'RESOURCE_GROUP_NAME',
+			})(process.env)
 
-			console.log(chalk.yellow.bold(' World:'))
+			console.log(
+				chalk.yellow('Subscription ID:        '),
+				chalk.blueBright(subscriptionId),
+			)
+			console.log(
+				chalk.yellow('Resource Group:         '),
+				chalk.blueBright(resourceGroup),
+			)
+			console.log(
+				chalk.yellow('AD B2C Tenant:          '),
+				chalk.blueBright(b2cTenant),
+			)
+			console.log(
+				chalk.yellow('AD B2C Tenant ID:       '),
+				chalk.blueBright(tenantId),
+			)
+			console.log(
+				chalk.yellow('AD B2C Client ID (E2E): '),
+				chalk.blueBright(clientId),
+			)
+			console.log(
+				chalk.yellow('AD B2C Client ID (ROPC):'),
+				chalk.blueBright(ropcClientId),
+			)
+			console.log()
+			console.log(chalk.yellow.bold('World:'))
 			console.log()
 			console.log(world)
 			console.log()
+			if (!retry) {
+				console.log(chalk.gray('Retries disabled.'))
+				console.log()
+			}
 
 			const runner = new FeatureRunner<BifravstWorld>(world, {
 				dir: featureDir,
@@ -73,17 +104,18 @@ program
 			runner.addStepRunners(
 				randomStepRunners({
 					generators: {
-						email: () => `${v4()}@example.com`,
-						password: () =>
-							((pw) =>
-								`${pw[0].toUpperCase()}${pw.substr(1)}${Math.round(
-									Math.random() * 1000,
-								)}`)(
-								Math.random()
-									.toString(36)
-									.replace(/[^a-z]+/g, ''),
-							),
+						email: randomEmail,
+						password: randomPassword,
 					},
+				}),
+			)
+			runner.addStepRunners(
+				await b2cSteps({
+					b2cTenant,
+					clientId,
+					clientSecret,
+					tenantId,
+					ropcClientId,
 				}),
 			)
 
@@ -91,7 +123,6 @@ program
 				const { success } = await runner.run()
 				if (!success) {
 					process.exit(1)
-					return
 				}
 				process.exit()
 			} catch (error) {
