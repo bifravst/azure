@@ -2,6 +2,7 @@ import {
 	FeatureRunner,
 	ConsoleReporter,
 	randomStepRunners,
+	restStepRunners,
 } from '@bifravst/e2e-bdd-test-runner'
 import * as program from 'commander'
 import * as chalk from 'chalk'
@@ -12,7 +13,7 @@ import { fromEnv } from './lib/fromEnv'
 
 let ran = false
 
-type BifravstWorld = Record<string, string>
+type BifravstWorld = { apiEndpoint: string }
 
 program
 	.arguments('<featureDir>')
@@ -35,8 +36,6 @@ program
 		) => {
 			ran = true
 
-			const world: BifravstWorld = {} as const
-
 			const {
 				b2cTenant,
 				clientId,
@@ -45,6 +44,7 @@ program
 				ropcClientId,
 				subscriptionId,
 				resourceGroup,
+				apiEndpoint,
 			} = fromEnv({
 				b2cTenant: 'B2C_TENANT',
 				clientId: 'E2E_AD_B2C_CLIENT_ID',
@@ -53,6 +53,7 @@ program
 				ropcClientId: 'E2E_AD_B2C_ROPC_CLIENT_ID',
 				subscriptionId: 'SUBSCRIPTION_ID',
 				resourceGroup: 'RESOURCE_GROUP_NAME',
+				apiEndpoint: 'API_ENDPOINT',
 			})(process.env)
 
 			console.log(
@@ -62,6 +63,10 @@ program
 			console.log(
 				chalk.yellow('Resource Group:         '),
 				chalk.blueBright(resourceGroup),
+			)
+			console.log(
+				chalk.yellow('API endpoint:           '),
+				chalk.blueBright(apiEndpoint),
 			)
 			console.log(
 				chalk.yellow('AD B2C Tenant:          '),
@@ -80,12 +85,19 @@ program
 				chalk.blueBright(ropcClientId),
 			)
 			console.log()
+
+			const world: BifravstWorld = {
+				apiEndpoint: `${apiEndpoint}api/`,
+			} as const
 			console.log(chalk.yellow.bold('World:'))
 			console.log()
 			console.log(world)
 			console.log()
 			if (!retry) {
-				console.log(chalk.gray('Retries disabled.'))
+				console.log()
+				console.log(chalk.yellow.bold('Test Runner:'))
+				console.log()
+				console.log('', chalk.red('❌'), chalk.red('Retries disabled.'))
 				console.log()
 			}
 
@@ -101,23 +113,25 @@ program
 				],
 				retry,
 			})
-			runner.addStepRunners(
-				randomStepRunners({
-					generators: {
-						email: randomEmail,
-						password: randomPassword,
-					},
-				}),
-			)
-			runner.addStepRunners(
-				await b2cSteps({
-					b2cTenant,
-					clientId,
-					clientSecret,
-					tenantId,
-					ropcClientId,
-				}),
-			)
+			runner
+				.addStepRunners(
+					randomStepRunners({
+						generators: {
+							email: randomEmail,
+							password: randomPassword,
+						},
+					}),
+				)
+				.addStepRunners(
+					await b2cSteps({
+						b2cTenant,
+						clientId,
+						clientSecret,
+						tenantId,
+						ropcClientId,
+					}),
+				)
+				.addStepRunners(restStepRunners())
 
 			try {
 				const { success } = await runner.run()

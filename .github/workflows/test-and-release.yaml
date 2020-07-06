@@ -10,6 +10,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  APP_NAME: bifravstprod
   B2C_TENANT: bifravstprod
   RESOURCE_GROUP_NAME: bifravstprod
   E2E_AD_B2C_CLIENT_ID: ${{ secrets.E2E_AD_B2C_CLIENT_ID }}
@@ -34,6 +35,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit
       - run: npm test
+      - name: Determine API endpoint
+        run: |
+          API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
+          echo "::set-env name=API_ENDPOINT::${API_ENDPOINT}"
       - run: npm run test:e2e
       - name: Semantic release
         if: success()
