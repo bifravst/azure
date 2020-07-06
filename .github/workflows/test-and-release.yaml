@@ -10,7 +10,8 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  B2C_TENANT: ${{ secrets.B2C_TENANT }}
+  B2C_TENANT: bifravstprod
+  RESOURCE_GROUP_NAME: bifravstprod
   E2E_AD_B2C_CLIENT_ID: ${{ secrets.E2E_AD_B2C_CLIENT_ID }}
   E2E_AD_B2C_CLIENT_SECRET: ${{ secrets.E2E_AD_B2C_CLIENT_SECRET }}
   E2E_AD_B2C_TENANT_ID: ${{ secrets.E2E_AD_B2C_TENANT_ID }}
