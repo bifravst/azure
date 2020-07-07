@@ -3,10 +3,13 @@ import { log } from '../lib/log'
 import { r } from '../lib/http'
 import { CosmosClient } from '@azure/cosmos'
 import { parseConnectionString } from './parseConnectionString'
+import { fromEnv } from '../lib/fromEnv'
 
-const { AccountEndpoint, AccountKey } = parseConnectionString(
-	process.env.HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING ?? '',
-)
+const { connectionString } = fromEnv({
+	connectionString: 'HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING',
+})(process.env)
+
+const { AccountEndpoint, AccountKey } = parseConnectionString(connectionString)
 const cosmosClient = new CosmosClient({
 	endpoint: AccountEndpoint,
 	key: AccountKey,

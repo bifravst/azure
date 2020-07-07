@@ -6,9 +6,12 @@ import {
 	StorageSharedKeyCredential,
 } from '@azure/storage-blob'
 import { log } from '../lib/log'
+import { fromEnv } from '../lib/fromEnv'
 
-const avatarStorageAccountName = process.env.AVATAR_STORAGE_ACCOUNT_NAME ?? ''
-const avatarStorageAccessKey = process.env.AVATAR_STORAGE_ACCESS_KEY ?? ''
+const { avatarStorageAccountName, avatarStorageAccessKey } = fromEnv({
+	avatarStorageAccountName: 'AVATAR_STORAGE_ACCOUNT_NAME',
+	avatarStorageAccessKey: 'AVATAR_STORAGE_ACCESS_KEY',
+})(process.env)
 const avatarStorageContainer = 'avatars'
 
 const sharedKeyCredential = new StorageSharedKeyCredential(

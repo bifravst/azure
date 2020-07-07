@@ -3,8 +3,11 @@ import { Registry } from 'azure-iothub'
 import { r } from '../lib/http'
 import { ErrorInfo, ErrorType, toStatusCode } from '../lib/ErrorInfo'
 import { log } from '../lib/log'
+import { fromEnv } from '../lib/fromEnv'
 
-const connectionString = process.env.IOT_HUB_CONNECTION_STRING ?? ''
+const { connectionString } = fromEnv({
+	connectionString: 'IOT_HUB_CONNECTION_STRING',
+})(process.env)
 
 const updateDevice: AzureFunction = async (
 	context: Context,

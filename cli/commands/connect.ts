@@ -11,8 +11,11 @@ import { uiServer, WebSocketConnection } from '@bifravst/device-ui-server'
 import { deviceTopics } from '../iot/deviceTopics'
 import { dpsTopics } from '../iot/dpsTopics'
 import { defaultConfig } from '../iot/defaultConfig'
+import { fromEnv } from '../../lib/fromEnv'
 
-const deviceUiUrl = process.env.DEVICE_UI_LOCATION ?? ''
+const { deviceUiUrl } = fromEnv({
+	deviceUiUrl: 'DEVICE_UI_LOCATION',
+})(process.env)
 
 export const connectCommand = ({
 	certsDir,

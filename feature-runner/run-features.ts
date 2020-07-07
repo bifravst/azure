@@ -9,7 +9,7 @@ import * as chalk from 'chalk'
 import { randomEmail } from './lib/randomEmail'
 import { randomPassword } from './lib/randomPassword'
 import { b2cSteps } from './steps/b2c'
-import { fromEnv } from './lib/fromEnv'
+import { fromEnv } from '../lib/fromEnv'
 
 let ran = false
 

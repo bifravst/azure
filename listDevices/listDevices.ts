@@ -2,8 +2,11 @@ import { AzureFunction, Context, HttpRequest } from '@azure/functions'
 import { Registry } from 'azure-iothub'
 import { r } from '../lib/http'
 import { log } from '../lib/log'
+import { fromEnv } from '../lib/fromEnv'
 
-const connectionString = process.env.IOT_HUB_CONNECTION_STRING || ''
+const { connectionString } = fromEnv({
+	connectionString: 'IOT_HUB_CONNECTION_STRING',
+})(process.env)
 
 const listDevices: AzureFunction = async (
 	context: Context,
