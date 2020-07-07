@@ -13,6 +13,7 @@ env:
   APP_NAME: bifravstprod
   B2C_TENANT: bifravstprod
   RESOURCE_GROUP_NAME: bifravstprod
+  SUBSCRIPTION_ID: ${{ secrets.E2E_SUBSCRIPTION_ID }}
   E2E_AD_B2C_CLIENT_ID: ${{ secrets.E2E_AD_B2C_CLIENT_ID }}
   E2E_AD_B2C_CLIENT_SECRET: ${{ secrets.E2E_AD_B2C_CLIENT_SECRET }}
   E2E_AD_B2C_TENANT_ID: ${{ secrets.E2E_AD_B2C_TENANT_ID }}

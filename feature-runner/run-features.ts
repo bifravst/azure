@@ -42,7 +42,6 @@ program
 				clientSecret,
 				tenantId,
 				ropcClientId,
-				subscriptionId,
 				resourceGroup,
 				apiEndpoint,
 			} = fromEnv({
@@ -51,15 +50,10 @@ program
 				clientSecret: 'E2E_AD_B2C_CLIENT_SECRET',
 				tenantId: 'E2E_AD_B2C_TENANT_ID',
 				ropcClientId: 'E2E_AD_B2C_ROPC_CLIENT_ID',
-				subscriptionId: 'SUBSCRIPTION_ID',
 				resourceGroup: 'RESOURCE_GROUP_NAME',
 				apiEndpoint: 'API_ENDPOINT',
 			})(process.env)
 
-			console.log(
-				chalk.yellow('Subscription ID:        '),
-				chalk.blueBright(subscriptionId),
-			)
 			console.log(
 				chalk.yellow('Resource Group:         '),
 				chalk.blueBright(resourceGroup),
