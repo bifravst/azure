@@ -17,6 +17,21 @@
         "description": "Client ID of the Active Directory App Registration used for authentication"
       }
     },
+    "b2cTenant": {
+      "type": "string",
+      "minLength": 3,
+      "metadata": {
+        "description": "Initial domain name of the created Active Directory B2C"
+      }
+    },
+    "b2cFlowName": {
+      "type": "string",
+      "minLength": 3,
+      "defaultValue": "B2C_1_signup_signin",
+      "metadata": {
+        "description": "Name of the login flow"
+      }
+    },
     "tenantId": {
       "type": "string",
       "minLength": 36,
@@ -329,7 +344,7 @@
               "tokenStoreEnabled": true,
               "defaultProvider": "AzureActiveDirectory",
               "clientId": "[parameters('appRegistrationClientId')]",
-              "issuer": "[concat('https://sts.windows.net/', parameters('tenantId'), '/')]"
+              "issuer": "[concat('https://',parameters('b2cTenant'),'.b2clogin.com/',parameters('b2cTenant'),'.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=',parameters('b2cFlowName'),'')]"
             }
           }
         }
