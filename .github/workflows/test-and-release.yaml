@@ -34,6 +34,7 @@ jobs:
           key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
         run: npm ci --no-audit
+      - run: npx tsc
       - run: npm test
       - name: Determine API endpoint
         run: |
