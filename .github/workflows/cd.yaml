@@ -2,6 +2,8 @@ name: Continuous Deployment
 
 on:
   push:
+    branches:
+      - saga
 
 env:
   AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
