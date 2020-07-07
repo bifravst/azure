@@ -12,6 +12,7 @@ RUN \
     node -v && \
     # Azure CLI
     curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+    az --version && \
     # Azure Functions Core Tools, see https://github.com/Azure/azure-functions-core-tools/blob/dev/README.md#linux
     export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true && \
     apt -y install wget && \
@@ -30,4 +31,5 @@ RUN \
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 ENV FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT=1
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 EXPOSE 7071/tcp
