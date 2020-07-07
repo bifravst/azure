@@ -7,7 +7,7 @@
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",
     "test": "jest",
-    "test:e2e": "node dist/feature-runner/run-features.js ./features --print-results --progress"
+    "test:e2e": "node --unhandled-rejections=strict dist/feature-runner/run-features.js ./features --print-results --progress"
   },
   "repository": {
     "type": "git",
