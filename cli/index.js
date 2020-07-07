@@ -7,7 +7,5 @@ process.on('uncaughtException', (err, origin) => {
 	console.error(err)
 })
 
-throw new Error('Foo!')
-
 // eslint-disable-next-line
 require('../dist/cli/bifravst')
