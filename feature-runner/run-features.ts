@@ -41,7 +41,6 @@ program
 				clientId,
 				clientSecret,
 				tenantId,
-				ropcClientId,
 				resourceGroup,
 				apiEndpoint,
 			} = fromEnv({
@@ -49,7 +48,6 @@ program
 				clientId: 'E2E_AD_B2C_CLIENT_ID',
 				clientSecret: 'E2E_AD_B2C_CLIENT_SECRET',
 				tenantId: 'E2E_AD_B2C_TENANT_ID',
-				ropcClientId: 'E2E_AD_B2C_ROPC_CLIENT_ID',
 				resourceGroup: 'RESOURCE_GROUP_NAME',
 				apiEndpoint: 'API_ENDPOINT',
 			})(process.env)
@@ -73,10 +71,6 @@ program
 			console.log(
 				chalk.yellow('AD B2C Client ID (E2E): '),
 				chalk.blueBright(clientId),
-			)
-			console.log(
-				chalk.yellow('AD B2C Client ID (ROPC):'),
-				chalk.blueBright(ropcClientId),
 			)
 			console.log()
 
@@ -122,7 +116,6 @@ program
 						clientId,
 						clientSecret,
 						tenantId,
-						ropcClientId,
 					}),
 				)
 				.addStepRunners(restStepRunners())

@@ -10,12 +10,10 @@ export const b2cSteps = async ({
 	tenantId,
 	clientSecret,
 	clientId,
-	ropcClientId,
 }: {
 	b2cTenant: string
 	tenantId: string
 	clientId: string
-	ropcClientId: string
 	clientSecret: string
 }): Promise<StepRunner<any>[]> => {
 	const accessToken = await getClientAccessToken({
@@ -34,7 +32,7 @@ export const b2cSteps = async ({
 			/^I log in as the Azure AD B2C user "(?<email>[^"]+)" with the password "(?<password>[^"]+)" and store the access token in "(?<storageName>[^"]+)"$/,
 		)(async ({ email, password, storageName }, _, runner) => {
 			const token = await getUserAccessToken({
-				clientId: ropcClientId,
+				clientId,
 				b2cTenant,
 				password,
 				email,
