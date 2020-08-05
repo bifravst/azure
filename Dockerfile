@@ -10,14 +10,14 @@ RUN \
     /bin/bash -c 'curl -sL https://deb.nodesource.com/setup_10.x | bash -' && \
     apt-get install -y nodejs && \
     node -v && \
-    # Azure Functions Core Tools, see https://github.com/Azure/azure-functions-core-tools#linux
+    # Azure Functions Core Tools, see https://github.com/Azure/azure-functions-core-tools/blob/dev/README.md#linux
     export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true && \
     apt -y install wget && \
     wget -q https://packages.microsoft.com/config/ubuntu/18.10/packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     rm packages-microsoft-prod.deb && \
     apt-get -y update && \
-    apt -y install azure-functions-core-tools && \
+    apt -y install azure-functions-core-tools-3 && \
     func && \
     # download extension bundle
     apt-get install -y unzip && \
