@@ -4,3 +4,4 @@ dist/
 certificates/
 build/
 local.settings.json
+ci-credentials.json

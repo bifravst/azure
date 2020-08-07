@@ -45,9 +45,9 @@ program
 				apiEndpoint,
 			} = fromEnv({
 				b2cTenant: 'B2C_TENANT',
-				clientId: 'E2E_AD_B2C_CLIENT_ID',
-				clientSecret: 'E2E_AD_B2C_CLIENT_SECRET',
-				tenantId: 'E2E_AD_B2C_TENANT_ID',
+				clientId: 'APP_REG_CLIENT_ID',
+				clientSecret: 'B2C_CLIENT_SECRET',
+				tenantId: 'B2C_TENANT_ID',
 				resourceGroup: 'RESOURCE_GROUP_NAME',
 				apiEndpoint: 'API_ENDPOINT',
 			})(process.env)
