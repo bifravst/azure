@@ -13,6 +13,7 @@ env:
   APP_NAME: bifravst
   B2C_TENANT: bifravstciusers
   RESOURCE_GROUP_NAME: bifravst
+  LOCATION: northeurope
   APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
   B2C_CLIENT_SECRET: ${{ secrets.B2C_CLIENT_SECRET }}
   B2C_TENANT_ID: ${{ secrets.B2C_TENANT_ID }}
@@ -29,6 +30,15 @@ jobs:
         with:
           creds: ${{ secrets.E2E_AZURE_CREDENTIALS }}
       - run: az account list --output table
+      - name: Install Azure CLI
+        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      - name: Install Azures Functions CLI
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+          sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
+          sudo apt-get update
+          sudo apt-get install azure-functions-core-tools-3
       - uses: actions/setup-node@v1
         with:
           node-version: "14.x"
@@ -41,6 +51,19 @@ jobs:
         run: npm ci --no-audit
       - run: npx tsc
       - run: npm test
+      - run: |
+          export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`
+          az deployment group create \
+            --resource-group ${RESOURCE_GROUP_NAME} \
+            --mode Complete \
+            --name ${{ env.GITHUB_SHA }} \
+            --template-file azuredeploy.json \
+            --parameters \
+              appName=${APP_NAME} \
+              location=${LOCATION} \
+              appRegistrationClientId=${APP_REG_CLIENT_ID} \
+              tenantId=${TENANT_ID}
+      - run: func azure functionapp publish ${APP_NAME}api --typescript
       - name: Determine API endpoint
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
