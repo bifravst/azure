@@ -10,6 +10,8 @@ RUN \
     /bin/bash -c 'curl -sL https://deb.nodesource.com/setup_10.x | bash -' && \
     apt-get install -y nodejs && \
     node -v && \
+    # Azure CLI
+    curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
     # Azure Functions Core Tools, see https://github.com/Azure/azure-functions-core-tools/blob/dev/README.md#linux
     export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true && \
     apt -y install wget && \
