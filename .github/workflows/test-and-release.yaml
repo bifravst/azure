@@ -10,9 +10,9 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  APP_NAME: bifravstprod
-  B2C_TENANT: bifravstprod
-  RESOURCE_GROUP_NAME: bifravstprod
+  APP_NAME: bifravst
+  B2C_TENANT: bifravstciusers
+  RESOURCE_GROUP_NAME: bifravst
   APP_REG_CLIENT_ID: ${{ secrets.APP_REG_CLIENT_ID }}
   B2C_CLIENT_SECRET: ${{ secrets.B2C_CLIENT_SECRET }}
   B2C_TENANT_ID: ${{ secrets.B2C_TENANT_ID }}
