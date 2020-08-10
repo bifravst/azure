@@ -28,6 +28,7 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: az account list --output table
       - uses: actions/setup-node@v1
         with:
           node-version: "14.x"
