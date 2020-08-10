@@ -56,7 +56,7 @@ jobs:
           az deployment group create \
             --resource-group ${RESOURCE_GROUP_NAME} \
             --mode Complete \
-            --name ${{ env.GITHUB_SHA }} \
+            --name ${{ github.sha }} \
             --template-file azuredeploy.json \
             --parameters \
               appName=${APP_NAME} \
