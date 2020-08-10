@@ -26,5 +26,6 @@ RUN \
     unzip Microsoft.Azure.Functions.ExtensionBundle.1.1.1.zip -d /tmp/Functions/ExtensionBundles/Microsoft.Azure.Functions.ExtensionBundle/1.1.1 && \
     rm Microsoft.Azure.Functions.ExtensionBundle.1.1.1.zip
 
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 ENV FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT=1
 EXPOSE 7071/tcp
