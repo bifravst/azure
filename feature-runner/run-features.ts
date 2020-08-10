@@ -69,8 +69,14 @@ program
 				chalk.blueBright(tenantId),
 			)
 			console.log(
-				chalk.yellow('AD B2C Client ID (E2E): '),
+				chalk.yellow('AD B2C Client ID:       '),
 				chalk.blueBright(clientId),
+			)
+			console.log(
+				chalk.yellow('AD B2C Client Secret:   '),
+				chalk.blueBright(
+					`${clientSecret.substr(0, 5)}***${clientSecret.substr(-5)}`,
+				),
 			)
 			console.log()
 
