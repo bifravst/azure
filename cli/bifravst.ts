@@ -101,10 +101,10 @@ const bifravstCLI = async () => {
 		deploymentName: deployment,
 		credentials: getCurrentCreds,
 	})
-	const getIotDpsClient = async () =>
-		getCurrentCreds().then(
-			(creds) => new IotDpsClient(creds, creds.tokenInfo.subscription),
-		)
+	const getIotDpsClient = async () => getCurrentCreds().then(
+			(creds) => new IotDpsClient(creds as any, creds.tokenInfo.subscription) // FIXME: This removes a TypeScript incompatibility error
+	)
+
 	const getIotClient = async () =>
 		getCurrentCreds().then(
 			(creds) => new IotHubClient(creds, creds.tokenInfo.subscription),

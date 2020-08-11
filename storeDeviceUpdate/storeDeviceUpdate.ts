@@ -6,9 +6,12 @@ import {
 	BlobServiceClient,
 	StorageSharedKeyCredential,
 } from '@azure/storage-blob'
+import { fromEnv } from '../lib/fromEnv'
 
-const fotaStorageAccountName = process.env.FOTA_STORAGE_ACCOUNT_NAME ?? ''
-const fotaStorageAccessKey = process.env.FOTA_STORAGE_ACCESS_KEY ?? ''
+const { fotaStorageAccountName, fotaStorageAccessKey } = fromEnv({
+	fotaStorageAccountName: 'FOTA_STORAGE_ACCOUNT_NAME',
+	fotaStorageAccessKey: 'FOTA_STORAGE_ACCESS_KEY',
+})(process.env)
 const fotaStorageContainer = 'updates'
 
 const sharedKeyCredential = new StorageSharedKeyCredential(

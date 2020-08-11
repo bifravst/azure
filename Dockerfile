@@ -10,6 +10,9 @@ RUN \
     /bin/bash -c 'curl -sL https://deb.nodesource.com/setup_10.x | bash -' && \
     apt-get install -y nodejs && \
     node -v && \
+    # Azure CLI
+    curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+    az --version && \
     # Azure Functions Core Tools, see https://github.com/Azure/azure-functions-core-tools/blob/dev/README.md#linux
     export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true && \
     apt -y install wget && \
@@ -26,5 +29,7 @@ RUN \
     unzip Microsoft.Azure.Functions.ExtensionBundle.1.1.1.zip -d /tmp/Functions/ExtensionBundles/Microsoft.Azure.Functions.ExtensionBundle/1.1.1 && \
     rm Microsoft.Azure.Functions.ExtensionBundle.1.1.1.zip
 
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 ENV FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT=1
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 EXPOSE 7071/tcp
