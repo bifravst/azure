@@ -6,10 +6,12 @@ import {
 } from '@bifravst/e2e-bdd-test-runner'
 import * as program from 'commander'
 import * as chalk from 'chalk'
+import * as path from 'path'
 import { randomEmail } from './lib/randomEmail'
 import { randomPassword } from './lib/randomPassword'
 import { b2cSteps } from './steps/b2c'
 import { fromEnv } from '../lib/fromEnv'
+import { bifravstStepRunners } from './steps/bifravst'
 
 let ran = false
 
@@ -52,6 +54,8 @@ program
 				apiEndpoint: 'API_ENDPOINT',
 			})(process.env)
 
+			const certsDir = path.join(process.cwd(), 'certificates')
+
 			console.log(
 				chalk.yellow('Resource Group:         '),
 				chalk.blueBright(resourceGroup),
@@ -77,6 +81,10 @@ program
 				chalk.blueBright(
 					`${clientSecret.substr(0, 5)}***${clientSecret.substr(-5)}`,
 				),
+			)
+			console.log(
+				chalk.yellow('Certificate dir:        '),
+				chalk.blueBright(certsDir),
 			)
 			console.log()
 
@@ -125,6 +133,7 @@ program
 					}),
 				)
 				.addStepRunners(restStepRunners())
+				.addStepRunners(bifravstStepRunners({ certsDir }))
 
 			try {
 				const { success } = await runner.run()
