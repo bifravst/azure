@@ -32,14 +32,6 @@
         "description": "Name of the login flow"
       }
     },
-    "tenantId": {
-      "type": "string",
-      "minLength": 36,
-      "maxLength": 36,
-      "metadata": {
-        "description": "Tenant ID of the account containing the Active Directory used for authentication"
-      }
-    },
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",

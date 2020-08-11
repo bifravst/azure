@@ -52,7 +52,6 @@ jobs:
       - run: npx tsc
       - run: npm test
       - run: |
-          export TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r '.tenantId' | tr -d '\n'`
           az deployment group create \
             --resource-group ${RESOURCE_GROUP_NAME} \
             --mode Complete \
@@ -62,7 +61,6 @@ jobs:
               appName=${APP_NAME} \
               location=${LOCATION} \
               appRegistrationClientId=${APP_REG_CLIENT_ID} \
-              tenantId=${TENANT_ID} \
               b2cTenant=${B2C_TENANT} \
               b2cFlowName=B2C_1_developer
       - run: func azure functionapp publish ${APP_NAME}api --typescript

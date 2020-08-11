@@ -7,17 +7,17 @@ import {
 
 export const b2cSteps = async ({
 	b2cTenant,
-	tenantId,
+	b2cTenantId,
 	clientSecret,
 	clientId,
 }: {
 	b2cTenant: string
-	tenantId: string
+	b2cTenantId: string
 	clientId: string
 	clientSecret: string
 }): Promise<StepRunner<any>[]> => {
 	const accessToken = await getClientAccessToken({
-		tenantId,
+		tenantId: b2cTenantId,
 		clientId,
 		clientSecret,
 	})
