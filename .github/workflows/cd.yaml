@@ -61,7 +61,8 @@ jobs:
               appName=$APP_NAME \
               location=$LOCATION \
               appRegistrationClientId=$APP_REG_CLIENT_ID \
-              tenantId=$TENANT_ID
+              tenantId=$TENANT_ID \
+              b2cTenant=${B2C_TENANT}
       - run: func azure functionapp publish ${APP_NAME}api --typescript
       - name: Enable static site hosting for the app
         run:
