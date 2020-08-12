@@ -68,6 +68,9 @@ jobs:
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
           echo "::set-env name=API_ENDPOINT::${API_ENDPOINT}"
+      - run: node cli create-ca-root
+      - run: node cli proof-ca-root-possession
+      - run: node cli create-ca-intermediate
       - run: npm run test:e2e
       - name: Semantic release
         if: success()

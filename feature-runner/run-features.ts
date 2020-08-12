@@ -13,6 +13,7 @@ import { b2cSteps } from './steps/b2c'
 import { fromEnv } from '../lib/fromEnv'
 import { deviceStepRunners } from './steps/device'
 import { v4 } from 'uuid'
+import { list } from '../cli/iot/intermediateRegistry'
 
 let ran = false
 
@@ -87,6 +88,16 @@ program
 				chalk.yellow('Certificate dir:        '),
 				chalk.blueBright(certsDir),
 			)
+			const intermediateCerts = await list({ certsDir })
+			const intermediateCertId = intermediateCerts[0]
+			if (intermediateCertId === undefined) {
+				console.error(chalk.red(`Intermediate certificate not found!`))
+				process.exit(1)
+			}
+			console.log(
+				chalk.yellow('Intermediate certificate:'),
+				chalk.blueBright(intermediateCertId),
+			)
 			console.log()
 
 			const world: BifravstWorld = {
@@ -135,7 +146,9 @@ program
 					}),
 				)
 				.addStepRunners(restStepRunners())
-				.addStepRunners(deviceStepRunners({ certsDir, resourceGroup }))
+				.addStepRunners(
+					deviceStepRunners({ certsDir, resourceGroup, intermediateCertId }),
+				)
 
 			try {
 				const { success } = await runner.run()
@@ -145,7 +158,7 @@ program
 				process.exit()
 			} catch (error) {
 				console.error(chalk.red('Running the features failed!'))
-				console.error(error)
+				console.error(chalk.red(error.message))
 				process.exit(1)
 			}
 		},
