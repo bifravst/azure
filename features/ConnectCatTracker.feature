@@ -5,5 +5,6 @@ Feature: Connect a Cat Tracker
 
   Scenario: Generate a certificate and connect
 
-    When I generate a certificate
-    Then I connect the cat tracker
+    Given I have a random uuid in "deviceId"
+    When I generate a certificate for the device "{deviceId}"
+    Then I connect the device "{deviceId}"

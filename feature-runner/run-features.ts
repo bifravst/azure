@@ -11,7 +11,8 @@ import { randomEmail } from './lib/randomEmail'
 import { randomPassword } from './lib/randomPassword'
 import { b2cSteps } from './steps/b2c'
 import { fromEnv } from '../lib/fromEnv'
-import { bifravstStepRunners } from './steps/bifravst'
+import { deviceStepRunners } from './steps/device'
+import { v4 } from 'uuid'
 
 let ran = false
 
@@ -121,6 +122,7 @@ program
 						generators: {
 							email: randomEmail,
 							password: randomPassword,
+							uuid: v4,
 						},
 					}),
 				)
@@ -133,7 +135,7 @@ program
 					}),
 				)
 				.addStepRunners(restStepRunners())
-				.addStepRunners(bifravstStepRunners({ certsDir }))
+				.addStepRunners(deviceStepRunners({ certsDir, resourceGroup }))
 
 			try {
 				const { success } = await runner.run()
