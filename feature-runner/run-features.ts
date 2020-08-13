@@ -6,10 +6,14 @@ import {
 } from '@bifravst/e2e-bdd-test-runner'
 import * as program from 'commander'
 import * as chalk from 'chalk'
+import * as path from 'path'
 import { randomEmail } from './lib/randomEmail'
 import { randomPassword } from './lib/randomPassword'
 import { b2cSteps } from './steps/b2c'
 import { fromEnv } from '../lib/fromEnv'
+import { deviceStepRunners } from './steps/device'
+import { v4 } from 'uuid'
+import { list } from '../cli/iot/intermediateRegistry'
 
 let ran = false
 
@@ -52,31 +56,47 @@ program
 				apiEndpoint: 'API_ENDPOINT',
 			})(process.env)
 
+			const certsDir = path.join(process.cwd(), 'certificates')
+
 			console.log(
-				chalk.yellow('Resource Group:         '),
+				chalk.yellow('Resource Group:          '),
 				chalk.blueBright(resourceGroup),
 			)
 			console.log(
-				chalk.yellow('API endpoint:           '),
+				chalk.yellow('API endpoint:            '),
 				chalk.blueBright(apiEndpoint),
 			)
 			console.log(
-				chalk.yellow('AD B2C Tenant:          '),
+				chalk.yellow('AD B2C Tenant:           '),
 				chalk.blueBright(b2cTenant),
 			)
 			console.log(
-				chalk.yellow('AD B2C Tenant ID:       '),
+				chalk.yellow('AD B2C Tenant ID:        '),
 				chalk.blueBright(b2cTenantId),
 			)
 			console.log(
-				chalk.yellow('AD B2C Client ID:       '),
+				chalk.yellow('AD B2C Client ID:        '),
 				chalk.blueBright(clientId),
 			)
 			console.log(
-				chalk.yellow('AD B2C Client Secret:   '),
+				chalk.yellow('AD B2C Client Secret:    '),
 				chalk.blueBright(
 					`${clientSecret.substr(0, 5)}***${clientSecret.substr(-5)}`,
 				),
+			)
+			console.log(
+				chalk.yellow('Certificate dir:         '),
+				chalk.blueBright(certsDir),
+			)
+			const intermediateCerts = await list({ certsDir })
+			const intermediateCertId = intermediateCerts[0]
+			if (intermediateCertId === undefined) {
+				console.error(chalk.red(`Intermediate certificate not found!`))
+				process.exit(1)
+			}
+			console.log(
+				chalk.yellow('Intermediate certificate:'),
+				chalk.blueBright(intermediateCertId),
 			)
 			console.log()
 
@@ -113,6 +133,7 @@ program
 						generators: {
 							email: randomEmail,
 							password: randomPassword,
+							uuid: v4,
 						},
 					}),
 				)
@@ -125,6 +146,9 @@ program
 					}),
 				)
 				.addStepRunners(restStepRunners())
+				.addStepRunners(
+					deviceStepRunners({ certsDir, resourceGroup, intermediateCertId }),
+				)
 
 			try {
 				const { success } = await runner.run()
@@ -134,7 +158,7 @@ program
 				process.exit()
 			} catch (error) {
 				console.error(chalk.red('Running the features failed!'))
-				console.error(error)
+				console.error(chalk.red(error.message))
 				process.exit(1)
 			}
 		},
