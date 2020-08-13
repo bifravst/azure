@@ -98,41 +98,40 @@ export const connectDevice = async ({
 						reject(new Error(`Unexpected message on topic ${topic}!`))
 					})
 					client.on('error', reject)
-				})
-					.then(async (registration) => {
-						client.end()
-						client.removeAllListeners()
-						log?.(
-							`Device registration succeeded with IotHub`,
-							registration.assignedHub,
+				}).then(async (registration) => {
+					client.end()
+					client.removeAllListeners()
+					log?.(
+						`Device registration succeeded with IotHub`,
+						registration.assignedHub,
+					)
+					return fs
+						.writeFile(
+							deviceFiles.registration,
+							JSON.stringify(registration, null, 2),
+							'utf-8',
 						)
-						return fs
-							.writeFile(
-								deviceFiles.registration,
-								JSON.stringify(registration, null, 2),
-								'utf-8',
-							)
-							.then(() => registration.assignedHub)
-					})
-					.then((iotHub) => {
-						log?.(`Connecting to`, `${iotHub}`)
+						.then(() => registration.assignedHub)
+				})
+			})
+			.then((iotHub) => {
+				log?.(`Connecting to`, `${iotHub}`)
 
-						const client = connect({
-							host: iotHub,
-							port: 8883,
-							key: deviceKey,
-							cert: deviceCert,
-							rejectUnauthorized: true,
-							clientId: deviceId,
-							protocol: 'mqtts',
-							username: `${iotHub}/${deviceId}/?api-version=2018-06-30`,
-							version: 4,
-						})
-						client.on('connect', async () => {
-							log?.('Connected', deviceId)
-							resolve(client)
-						})
-					})
+				const client = connect({
+					host: iotHub,
+					port: 8883,
+					key: deviceKey,
+					cert: deviceCert,
+					rejectUnauthorized: true,
+					clientId: deviceId,
+					protocol: 'mqtts',
+					username: `${iotHub}/${deviceId}/?api-version=2018-06-30`,
+					version: 4,
+				})
+				client.on('connect', async () => {
+					log?.('Connected', deviceId)
+					resolve(client)
+				})
 			})
 			.catch(reject)
 	})

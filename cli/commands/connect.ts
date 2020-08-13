@@ -137,32 +137,30 @@ export const connectCommand = ({
 
 			const getTwinPropertiesRequestId = v4()
 
-			client.on('connect', async () => {
-				console.log(chalk.green('Connected:'), chalk.blueBright(deviceId))
+			console.log(chalk.green('Connected:'), chalk.blueBright(deviceId))
 
-				const getTwinPropertiesTopic = deviceTopics.getTwinProperties(
-					getTwinPropertiesRequestId,
-				)
-				console.log(chalk.magenta('>'), chalk.yellow(getTwinPropertiesTopic))
-				client.publish(getTwinPropertiesTopic, '')
+			const getTwinPropertiesTopic = deviceTopics.getTwinProperties(
+				getTwinPropertiesRequestId,
+			)
+			console.log(chalk.magenta('>'), chalk.yellow(getTwinPropertiesTopic))
+			client.publish(getTwinPropertiesTopic, '')
 
-				await uiServer({
-					deviceUiUrl,
-					deviceId: deviceId,
-					onUpdate: updateTwinReported,
-					onMessage: (message) => {
-						console.log(chalk.magenta('>'), chalk.cyan(JSON.stringify(message)))
-						client.publish(
-							deviceTopics.messages(deviceId),
-							JSON.stringify(message),
-						)
-					},
-					onWsConnection: (c) => {
-						console.log(chalk.magenta('[ws]'), chalk.cyan('connected'))
-						wsConnection = c
-						sendConfigToUi()
-					},
-				})
+			await uiServer({
+				deviceUiUrl,
+				deviceId: deviceId,
+				onUpdate: updateTwinReported,
+				onMessage: (message) => {
+					console.log(chalk.magenta('>'), chalk.cyan(JSON.stringify(message)))
+					client.publish(
+						deviceTopics.messages(deviceId),
+						JSON.stringify(message),
+					)
+				},
+				onWsConnection: (c) => {
+					console.log(chalk.magenta('[ws]'), chalk.cyan('connected'))
+					wsConnection = c
+					sendConfigToUi()
+				},
 			})
 
 			client.on('message', (topic, payload) => {
