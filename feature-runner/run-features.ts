@@ -59,33 +59,33 @@ program
 			const certsDir = path.join(process.cwd(), 'certificates')
 
 			console.log(
-				chalk.yellow('Resource Group:         '),
+				chalk.yellow('Resource Group:          '),
 				chalk.blueBright(resourceGroup),
 			)
 			console.log(
-				chalk.yellow('API endpoint:           '),
+				chalk.yellow('API endpoint:            '),
 				chalk.blueBright(apiEndpoint),
 			)
 			console.log(
-				chalk.yellow('AD B2C Tenant:          '),
+				chalk.yellow('AD B2C Tenant:           '),
 				chalk.blueBright(b2cTenant),
 			)
 			console.log(
-				chalk.yellow('AD B2C Tenant ID:       '),
+				chalk.yellow('AD B2C Tenant ID:        '),
 				chalk.blueBright(b2cTenantId),
 			)
 			console.log(
-				chalk.yellow('AD B2C Client ID:       '),
+				chalk.yellow('AD B2C Client ID:        '),
 				chalk.blueBright(clientId),
 			)
 			console.log(
-				chalk.yellow('AD B2C Client Secret:   '),
+				chalk.yellow('AD B2C Client Secret:    '),
 				chalk.blueBright(
 					`${clientSecret.substr(0, 5)}***${clientSecret.substr(-5)}`,
 				),
 			)
 			console.log(
-				chalk.yellow('Certificate dir:        '),
+				chalk.yellow('Certificate dir:         '),
 				chalk.blueBright(certsDir),
 			)
 			const intermediateCerts = await list({ certsDir })
