@@ -71,7 +71,16 @@ jobs:
       - run: node cli create-ca-root
       - run: node cli proof-ca-root-possession
       - run: node cli create-ca-intermediate
+      - run: |
+          TENANT_ID=`cat ci-credentials.json | jq -r '.tenantId' | tr -d '\n'`
+          echo "::set-env name=TENANT_ID::${TENANT_ID}"
+      - name: Cache certificates
+        uses: actions/cache@v2
+        with:
+          path: ./certificates
+          key: certificates-${{ env.TENANT_ID }}
       - run: npm run test:e2e
+      - run: rm ./certificates/device-*
       - name: Semantic release
         if: success()
         continue-on-error: true
