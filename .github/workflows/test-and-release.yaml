@@ -25,13 +25,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Install Azure CLI
+        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
       - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.E2E_AZURE_CREDENTIALS }}
       - run: az account list --output table
-      - name: Install Azure CLI
-        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
       - name: Install Azures Functions CLI
         run: |
           curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
