@@ -51,7 +51,8 @@ jobs:
         run: npm ci --no-audit
       - run: npx tsc
       - run: npm test
-      - run: |
+      - name: Deploy solution
+        run: |
           az deployment group create \
             --resource-group ${RESOURCE_GROUP_NAME} \
             --mode Complete \
@@ -63,24 +64,32 @@ jobs:
               appRegistrationClientId=${APP_REG_CLIENT_ID} \
               b2cTenant=${B2C_TENANT} \
               b2cFlowName=B2C_1_developer
-      - run: func azure functionapp publish ${APP_NAME}api --typescript
+      - name: Deploy Function App
+        run: func azure functionapp publish ${APP_NAME}api --typescript
       - name: Determine API endpoint
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
           echo "::set-env name=API_ENDPOINT::${API_ENDPOINT}"
-      - run: node cli create-ca-root
-      - run: node cli proof-ca-root-possession
-      - run: node cli create-ca-intermediate
+      - run:
+          ls ./certificates/CA.intermediate.* 1> /dev/null 2>&1 && echo
+          "::set-env name=SKIP_CERT_GENERATION::1"
+      - name: Create Intermediate CA certificate
+        if: env.SKIP_CERT_GENERATION != '1'
+        run: |
+          node cli create-ca-root
+          node cli proof-ca-root-possession
+          node cli create-ca-intermediate
       - run: |
-          TENANT_ID=`cat ci-credentials.json | jq -r '.tenantId' | tr -d '\n'`
+          TENANT_ID=`echo ${AZURE_CREDENTIALS} | jq -r '.tenantId' | tr -d '\n'`
           echo "::set-env name=TENANT_ID::${TENANT_ID}"
+      - run: npm run test:e2e
+      - name: Delete device certificates
+        run: rm ./certificates/device-*
       - name: Cache certificates
         uses: actions/cache@v2
         with:
           path: ./certificates
           key: certificates-${{ env.TENANT_ID }}
-      - run: npm run test:e2e
-      - run: rm ./certificates/device-*
       - name: Semantic release
         if: success()
         continue-on-error: true
