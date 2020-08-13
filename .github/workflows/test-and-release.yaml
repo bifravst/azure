@@ -70,6 +70,11 @@ jobs:
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
           echo "::set-env name=API_ENDPOINT::${API_ENDPOINT}"
+      - name: Cache certificates
+        uses: actions/cache@v2
+        with:
+          path: ./certificates
+          key: certificates-${{ env.TENANT_ID }}
       - run: |
           ls ./certificates/CA.intermediate.* 1> /dev/null 2>&1
           echo "::set-env name=SKIP_CERT_GENERATION::1"
@@ -86,11 +91,6 @@ jobs:
       - run: npm run test:e2e
       - name: Delete device certificates
         run: rm ./certificates/device-*
-      - name: Cache certificates
-        uses: actions/cache@v2
-        with:
-          path: ./certificates
-          key: certificates-${{ env.TENANT_ID }}
       - name: Semantic release
         if: success()
         continue-on-error: true
