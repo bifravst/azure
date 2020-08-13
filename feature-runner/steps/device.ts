@@ -8,6 +8,8 @@ import { connectDevice } from '../../cli/iot/connectDevice'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from '@azure/ms-rest-nodeauth'
 import { MqttClient } from 'mqtt'
+import { deviceTopics } from '../../cli/iot/deviceTopics'
+import { v4 } from 'uuid'
 
 export const deviceStepRunners = ({
 	certsDir,
@@ -55,6 +57,19 @@ export const deviceStepRunners = ({
 			})
 			connections[deviceId] = connection
 			return deviceId
+		}),
+		regexGroupMatcher(
+			/^the (?:device|cat tracker) "(?<deviceId>[^"]+)" updates its reported state with$/,
+		)(async ({ deviceId }, step) => {
+			if (step.interpolatedArgument === undefined) {
+				throw new Error('Must provide argument!')
+			}
+			const reported = JSON.parse(step.interpolatedArgument)
+			const connection = connections[deviceId]
+			connection.publish(
+				deviceTopics.updateTwinReported(v4()),
+				JSON.stringify(reported),
+			)
 		}),
 	]
 }

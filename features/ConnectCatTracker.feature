@@ -1,4 +1,3 @@
-@Only
 Feature: Connect a Cat Tracker
   As a user
   I can connect a cat tracker
