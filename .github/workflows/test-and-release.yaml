@@ -70,9 +70,10 @@ jobs:
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
           echo "::set-env name=API_ENDPOINT::${API_ENDPOINT}"
-      - run:
-          ls ./certificates/CA.intermediate.* 1> /dev/null 2>&1 && echo
-          "::set-env name=SKIP_CERT_GENERATION::1"
+      - run: |
+          ls ./certificates/CA.intermediate.* 1> /dev/null 2>&1
+          echo "::set-env name=SKIP_CERT_GENERATION::1"
+        continue-on-error: true
       - name: Create Intermediate CA certificate
         if: env.SKIP_CERT_GENERATION != '1'
         run: |
