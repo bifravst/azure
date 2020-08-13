@@ -50,7 +50,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit
       - run: npx tsc
-      - run: npm test
+      - name: Run Unit Tests
+        run: npm test
       - name: Deploy solution
         run: |
           az deployment group create \
@@ -88,7 +89,8 @@ jobs:
       - run: |
           TENANT_ID=`echo ${AZURE_CREDENTIALS} | jq -r '.tenantId' | tr -d '\n'`
           echo "::set-env name=TENANT_ID::${TENANT_ID}"
-      - run: npm run test:e2e
+      - name: Run End-to-End Tests
+        run: npm run test:e2e
       - name: Delete device certificates
         run: rm ./certificates/device-*
       - name: Semantic release
