@@ -91,6 +91,8 @@ jobs:
           echo "::set-env name=TENANT_ID::${TENANT_ID}"
       - name: Run End-to-End Tests
         uses: nick-invision/retry@v1
+        env:
+          FORCE_COLOR: 3
         with:
           timeout_minutes: 10
           max_attempts: 3
