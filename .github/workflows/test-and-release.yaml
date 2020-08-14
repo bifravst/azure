@@ -90,7 +90,11 @@ jobs:
           TENANT_ID=`echo ${AZURE_CREDENTIALS} | jq -r '.tenantId' | tr -d '\n'`
           echo "::set-env name=TENANT_ID::${TENANT_ID}"
       - name: Run End-to-End Tests
-        run: npm run test:e2e
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: npm run test:e2e
       - name: Delete device certificates
         run: rm ./certificates/device-*
       - name: Semantic release
