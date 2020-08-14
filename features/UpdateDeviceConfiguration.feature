@@ -13,7 +13,7 @@ Feature: Update Device Configuration
 
   Scenario: Update the device configuration as a user
 
-    When I PATCH /device/{deviceId} with this JSON
+    When I PATCH /device/{catId} with this JSON
       """
       {
         "config": {

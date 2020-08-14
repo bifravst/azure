@@ -12,7 +12,7 @@ Feature: Read Device Shadow
 
   Scenario: Read reported and desired state as user
 
-    When I GET /device/{deviceId}
+    When I GET /device/{catId}
     Then the response status code should be 200
     Then "properties.desired" of the response body should match this JSON
       """

@@ -7,7 +7,7 @@ Feature: Device: Update Shadow
 
   Scenario: Publish device information to reported state
 
-    Given the cat tracker "{deviceId}" updates its reported state with
+    Given the cat tracker "{catId}" updates its reported state with
       """
       {
         "dev": {
