@@ -30,7 +30,7 @@ const deleteDevice: AzureFunction = async (
 			)
 		}
 		await registry.delete(req.params.id)
-		context.res = r({ success: true })
+		context.res = r({ success: true }, 202)
 	} catch (error) {
 		log(context)({
 			error: error.message,

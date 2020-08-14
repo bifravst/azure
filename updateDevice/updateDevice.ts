@@ -55,7 +55,7 @@ const updateDevice: AzureFunction = async (
 				res.result[0].etag,
 			)
 
-			context.res = r(true)
+			context.res = r({ success: true }, 202)
 		}
 	} catch (error) {
 		log(context)({

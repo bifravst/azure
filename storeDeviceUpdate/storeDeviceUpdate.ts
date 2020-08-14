@@ -59,7 +59,7 @@ const storeDeviceUpdate: AzureFunction = async (
 
 		const url = `https://${fotaStorageAccountName}.blob.core.windows.net/${fotaStorageContainer}/${blobName}`
 
-		context.res = r({ success: true, url })
+		context.res = r({ success: true, url }, 202)
 	} catch (error) {
 		log(context)({
 			error: error.message,

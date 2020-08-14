@@ -52,9 +52,12 @@ const storeImage: AzureFunction = async (
 		uploadBlobResponse.requestId,
 	)
 
-	context.res = r({
-		url: `https://${avatarStorageAccountName}.blob.core.windows.net/${avatarStorageContainer}/${blobName}`,
-	})
+	context.res = r(
+		{
+			url: `https://${avatarStorageAccountName}.blob.core.windows.net/${avatarStorageContainer}/${blobName}`,
+		},
+		202,
+	)
 }
 
 export default storeImage
