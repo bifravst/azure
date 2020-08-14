@@ -16,7 +16,7 @@ Feature: Update Device Configuration
     When I PATCH /device/{deviceId} with this JSON
       """
       {
-        "cfg": {
+        "config": {
           "act": false,
           "actwt": 60,
           "mvres": 60,
