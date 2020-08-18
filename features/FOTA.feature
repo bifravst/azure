@@ -10,22 +10,22 @@ Feature: Device Firmware Upgrade over the air
     And the endpoint is "{apiEndpoint}"
     And the Authorization header is "Bearer {accessToken}"
 
-  Scenario: Create a new firmware upgrade as a user
+  Scenario: Create a new firmware upgrade as a user (uploads are base64 encoded)
 
     Given the Content-Type header is "text/plain; charset=UTF-8"
+    And I have a random uuid in "updateJobId"
     When I POST to /firmware with this payload
       """
-      SOME HEX DATA
+      U09NRSBIRVggREFUQQ==
       """
     Then the response status code should be 200
-    And "success" of the response should be true
-    And "$length(url) > 60" of the response should be "true"
-    And I store "url" of the response as "fwLocation"
+    And "success" of the response body should be true
+    And "$length(url) > 60" of the response body should be true
+    And I store "url" of the response body as "fwLocation"
 
   Scenario: Configure the firmware job on the device
 
     Given the Content-Type header is "application/json; charset=utf-8"
-    And I have a random uuid in "updateJobId"
     When I PATCH /device/{catId} with this JSON
       """
       {
@@ -39,9 +39,16 @@ Feature: Device Firmware Upgrade over the air
 
   Scenario: Fetch the job as a device and mark as in progress
 
-    Given the cat tracker "{catId}" updates its reported state with
-    When the cat tracker fetches the next job into "job"
-    Then "job" should match this JSON
+    When the desired state of the cat tracker "{catId}" matches
+      """
+      {
+        "fota": {
+          "jobId": "{updateJobId}",
+          "location": "{fwLocation}"
+        }
+      }
+      """
+    Then the cat tracker "{catId}" updates its reported state with
       """
       {
         "fota": {
@@ -50,8 +57,6 @@ Feature: Device Firmware Upgrade over the air
         }
       }
       """
-    And the cat tracker marks the job in "job" as in progress
-
 
   Scenario: Read the job execution status
 
@@ -74,4 +79,12 @@ Feature: Device Firmware Upgrade over the air
           "status": "IN_PROGRESS"
         }
       }
+      """
+
+  Scenario: Download firmware
+
+    When I download the firmware from {fwLocation}
+    Then the firmware file should contain this payload
+      """
+      SOME HEX DATA
       """
