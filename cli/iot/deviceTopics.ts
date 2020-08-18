@@ -1,5 +1,7 @@
 export const deviceTopics = {
 	getTwinProperties: (rid: string): string => `$iothub/twin/GET/?$rid=${rid}`,
+	getTwinPropertiesAccepted: (rid: string): string =>
+		`$iothub/twin/res/200/?$rid=${rid}`,
 	updateTwinReported: (rid: string): string =>
 		`$iothub/twin/PATCH/properties/reported/?$rid=${rid}`,
 	updateTwinReportedAccepted: new RegExp(
