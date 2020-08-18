@@ -41,13 +41,13 @@
     "deepmerge": "^4.1.1",
     "mqtt": "^4.2.0",
     "node-fetch": "^2.6.0",
-    "snyk": "^1.377.0",
+    "snyk": "^1.377.2",
     "uuid": "^8.3.0"
   },
   "devDependencies": {
     "@azure/arm-deviceprovisioningservices": "^2.1.0",
     "@azure/functions": "^1.2.2",
-    "@bifravst/code-style": "^8.0.29",
+    "@bifravst/code-style": "^8.0.30",
     "@bifravst/e2e-bdd-test-runner": "^2.2.0",
     "@commitlint/cli": "^9.1.2",
     "@commitlint/config-angular": "^9.1.2",
