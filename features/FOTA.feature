@@ -29,18 +29,12 @@ Feature: Device Firmware Upgrade over the air
   Scenario: Configure the firmware job on the device
 
     Given the Content-Type header is "application/json; charset=utf-8"
-    When I store "$match(fwPackageURI,/^https?:\/\/([^\/]+)/).groups[0]" into "fwLocationHost"
-    And I store "$match(fwPackageURI,/^https?:\/\/[^\/]+(\/.+)/).groups[0]" into "fwLocationPath"
-    And I PATCH /device/{catId} with this JSON
+    When I PATCH /device/{catId} with this JSON
       """
       {
         "firmware": {
           "fwVersion": "1.0.1",
-          "fwPackageURI": "{fwPackageURI}",
-          "fwLocation": {
-            "host": "{fwLocationHost}",
-            "path": "{fwLocationPath}"
-          }
+          "fwPackageURI": "{fwPackageURI}"
         }
       }
       """
@@ -48,6 +42,8 @@ Feature: Device Firmware Upgrade over the air
 
   Scenario: Fetch the job as a device and mark as in progress
 
+    Given I store "$match(fwPackageURI,/^https?:\/\/([^\/]+)/).groups[0]" into "fwLocationHost"
+    And I store "$match(fwPackageURI,/^https?:\/\/[^\/]+(\/.+)/).groups[0]" into "fwLocationPath"
     When the desired state of the cat tracker "{catId}" matches
       """
       {

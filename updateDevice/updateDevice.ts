@@ -4,6 +4,7 @@ import { r } from '../lib/http'
 import { ErrorInfo, ErrorType, toStatusCode } from '../lib/ErrorInfo'
 import { log } from '../lib/log'
 import { fromEnv } from '../lib/fromEnv'
+import * as url from 'url'
 
 const { connectionString } = fromEnv({
 	connectionString: 'IOT_HUB_CONNECTION_STRING',
@@ -40,6 +41,11 @@ const updateDevice: AzureFunction = async (
 					},
 				},
 			})
+
+			if (firmware !== undefined) {
+				const { fwPackageURI } = firmware
+				firmware.fwLocation = url.parse(fwPackageURI)
+			}
 
 			await registry.updateTwin(
 				req.params.id,
