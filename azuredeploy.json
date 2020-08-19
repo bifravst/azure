@@ -384,7 +384,7 @@
       },
       "kind": "StorageV2",
       "properties": {
-        "supportsHttpsTrafficOnly": true
+        "supportsHttpsTrafficOnly": false
       }
     },
     {
