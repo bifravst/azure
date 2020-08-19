@@ -14,9 +14,13 @@ Feature: Device Firmware Upgrade over the air
 
     Given the Content-Type header is "text/plain; charset=UTF-8"
     And I have a random uuid in "updateJobId"
+    And I encode this payload into "firmwareImageUpload" using base64
+      """
+      SOME HEX DATA {updateJobId}
+      """
     When I POST to /firmware with this payload
       """
-      U09NRSBIRVggREFUQQ==
+      {firmwareImageUpload}
       """
     Then the response status code should be 200
     And "success" of the response body should be true
@@ -86,5 +90,5 @@ Feature: Device Firmware Upgrade over the air
     When I download the firmware from {fwLocation}
     Then the firmware file should contain this payload
       """
-      SOME HEX DATA
+      SOME HEX DATA {updateJobId}
       """

@@ -3,6 +3,7 @@ import {
 	ConsoleReporter,
 	randomStepRunners,
 	restStepRunners,
+	storageStepRunners,
 } from '@bifravst/e2e-bdd-test-runner'
 import * as program from 'commander'
 import * as chalk from 'chalk'
@@ -149,6 +150,7 @@ program
 				.addStepRunners(
 					deviceStepRunners({ certsDir, resourceGroup, intermediateCertId }),
 				)
+				.addStepRunners(storageStepRunners())
 
 			try {
 				const { success } = await runner.run()
