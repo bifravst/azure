@@ -29,12 +29,18 @@ Feature: Device Firmware Upgrade over the air
   Scenario: Configure the firmware job on the device
 
     Given the Content-Type header is "application/json; charset=utf-8"
-    When I PATCH /device/{catId} with this JSON
+    When I store "$match(fwPackageURI,/^https?:\/\/([^\/]+)/).groups[0]" into "fwLocationHost"
+    And I store "$match(fwPackageURI,/^https?:\/\/[^\/]+(\/.+)/).groups[0]" into "fwLocationPath"
+    And I PATCH /device/{catId} with this JSON
       """
       {
         "firmware": {
           "fwVersion": "1.0.1",
-          "fwPackageURI": "{fwPackageURI}"
+          "fwPackageURI": "{fwPackageURI}",
+          "fwLocation": {
+            "host": "{fwLocationHost}",
+            "path": "{fwLocationPath}"
+          }
         }
       }
       """
@@ -47,7 +53,11 @@ Feature: Device Firmware Upgrade over the air
       {
         "firmware": {
           "fwVersion": "1.0.1",
-          "fwPackageURI": "{fwPackageURI}"
+          "fwPackageURI": "{fwPackageURI}",
+          "fwLocation": {
+            "host": "{fwLocationHost}",
+            "path": "{fwLocationPath}"
+          }
         }
       }
       """
@@ -71,7 +81,11 @@ Feature: Device Firmware Upgrade over the air
       {
         "firmware": {
           "fwVersion": "1.0.1",
-          "fwPackageURI": "{fwPackageURI}"
+          "fwPackageURI": "{fwPackageURI}",
+          "fwLocation": {
+            "host": "{fwLocationHost}",
+            "path": "{fwLocationPath}"
+          }
         }
       }
       """
@@ -89,6 +103,14 @@ Feature: Device Firmware Upgrade over the air
   Scenario: Download firmware
 
     When I download the firmware from {fwPackageURI}
+    Then the firmware file should contain this payload
+      """
+      1.0.1 FIRMWARE HEX FILE
+      """
+
+  Scenario: Download firmware using HTTP (the nRF9160 implementation does this)
+
+    When I download the firmware from http://{fwLocationHost}{fwLocationPath}
     Then the firmware file should contain this payload
       """
       1.0.1 FIRMWARE HEX FILE
