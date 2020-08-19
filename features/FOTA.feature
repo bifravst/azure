@@ -13,10 +13,9 @@ Feature: Device Firmware Upgrade over the air
   Scenario: Create a new firmware upgrade as a user (uploads are base64 encoded)
 
     Given the Content-Type header is "text/plain; charset=UTF-8"
-    And I have a random uuid in "updateJobId"
     And I encode this payload into "firmwareImageUpload" using base64
       """
-      SOME HEX DATA {updateJobId}
+      1.0.1 FIRMWARE HEX FILE
       """
     When I POST to /firmware with this payload
       """
@@ -25,7 +24,7 @@ Feature: Device Firmware Upgrade over the air
     Then the response status code should be 200
     And "success" of the response body should be true
     And "$length(url) > 60" of the response body should be true
-    And I store "url" of the response body as "fwLocation"
+    And I store "url" of the response body as "fwPackageURI"
 
   Scenario: Configure the firmware job on the device
 
@@ -33,9 +32,9 @@ Feature: Device Firmware Upgrade over the air
     When I PATCH /device/{catId} with this JSON
       """
       {
-        "fota": {
-          "jobId": "{updateJobId}",
-          "location": "{fwLocation}"
+        "firmware": {
+          "fwVersion": "1.0.1",
+          "fwPackageURI": "{fwPackageURI}"
         }
       }
       """
@@ -46,18 +45,19 @@ Feature: Device Firmware Upgrade over the air
     When the desired state of the cat tracker "{catId}" matches
       """
       {
-        "fota": {
-          "jobId": "{updateJobId}",
-          "location": "{fwLocation}"
+        "firmware": {
+          "fwVersion": "1.0.1",
+          "fwPackageURI": "{fwPackageURI}"
         }
       }
       """
     Then the cat tracker "{catId}" updates its reported state with
       """
       {
-        "fota": {
-          "jobId": "{updateJobId}",
-          "status": "IN_PROGRESS"
+        "firmware": {
+          "currentFwVersion": "1.0.0",
+          "pendingFwVersion": "1.0.1",
+          "status": "downloading"
         }
       }
       """
@@ -69,26 +69,27 @@ Feature: Device Firmware Upgrade over the air
     Then "properties.desired" of the response body should match this JSON
       """
       {
-        "fota": {
-          "jobId": "{updateJobId}",
-          "location": "{fwLocation}"
+        "firmware": {
+          "fwVersion": "1.0.1",
+          "fwPackageURI": "{fwPackageURI}"
         }
       }
       """
     And "properties.reported" of the response body should match this JSON
       """
       {
-        "fota": {
-          "jobId": "{updateJobId}",
-          "status": "IN_PROGRESS"
+        "firmware": {
+          "currentFwVersion": "1.0.0",
+          "pendingFwVersion": "1.0.1",
+          "status": "downloading"
         }
       }
       """
 
   Scenario: Download firmware
 
-    When I download the firmware from {fwLocation}
+    When I download the firmware from {fwPackageURI}
     Then the firmware file should contain this payload
       """
-      SOME HEX DATA {updateJobId}
+      1.0.1 FIRMWARE HEX FILE
       """

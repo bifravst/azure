@@ -29,14 +29,14 @@ const updateDevice: AzureFunction = async (
 				toStatusCode[ErrorType.EntityNotFound],
 			)
 		} else {
-			const { config: cfg, fota, ...rest } = req.body
+			const { config: cfg, firmware, ...rest } = req.body
 
 			log(context)({
 				tags: rest,
 				properties: {
 					desired: {
 						cfg,
-						fota,
+						firmware,
 					},
 				},
 			})
@@ -48,7 +48,7 @@ const updateDevice: AzureFunction = async (
 					properties: {
 						desired: {
 							cfg,
-							fota,
+							firmware,
 						},
 					},
 				},
