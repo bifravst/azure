@@ -7,6 +7,7 @@ import { deviceTopics } from '../iot/deviceTopics'
 import { defaultConfig } from '../iot/defaultConfig'
 import { fromEnv } from '../../lib/fromEnv'
 import { connectDevice } from '../iot/connectDevice'
+import { Status } from '../iot/fota'
 
 let deviceUiUrl = ''
 
@@ -111,18 +112,24 @@ export const connectCommand = ({
 				sendConfigToUi()
 			}
 
-			const simulateFota = (fota: { jobId: string }) => {
+			/**
+			 * Simulate the FOTA process
+			 * @see https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-firmware-update#update-the-firmware
+			 */
+			const simulateFota = ({ fwVersion }: { fwVersion: string }) => {
 				updateTwinReported({
-					fota: {
-						jobId: fota.jobId,
-						status: 'IN_PROGRESS',
+					firmware: {
+						currentFwVersion: version,
+						pendingFwVersion: fwVersion,
+						status: Status.DOWNLOADING,
 					},
 				})
 				setTimeout(() => {
 					updateTwinReported({
-						fota: {
-							jobId: fota.jobId,
-							status: 'SUCCEEDED',
+						firmware: {
+							currentFwVersion: fwVersion,
+							pendingFwVersion: fwVersion,
+							status: Status.CURRENT,
 						},
 					})
 				}, 10 * 1000)
@@ -190,8 +197,8 @@ export const connectCommand = ({
 					if (desiredUpdate.cfg !== undefined) {
 						updateConfig(desiredUpdate.cfg)
 					}
-					if (desiredUpdate.fota !== undefined) {
-						simulateFota(desiredUpdate.fota)
+					if (desiredUpdate.firmware !== undefined) {
+						simulateFota(desiredUpdate.firmware)
 					}
 					return
 				}

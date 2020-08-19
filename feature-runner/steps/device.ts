@@ -120,12 +120,12 @@ export const deviceStepRunners = ({
 			}
 			return state
 		}),
-		regexGroupMatcher(/^I download the firmware from (?<fwLocation>http.+)$/)(
-			async ({ fwLocation }) => {
-				const res = await fetch(fwLocation)
+		regexGroupMatcher(/^I download the firmware from (?<fwPackageURI>http.+)$/)(
+			async ({ fwPackageURI }) => {
+				const res = await fetch(fwPackageURI)
 				expect(res.status).to.equal(200)
 				fwResult = await (await res.blob()).text()
-				return [fwLocation, fwResult]
+				return [fwPackageURI, fwResult]
 			},
 		),
 		regexMatcher(/^the firmware file should contain this payload$/)(
