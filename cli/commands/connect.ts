@@ -131,6 +131,12 @@ export const connectCommand = ({
 							pendingFwVersion: fwVersion,
 							status: Status.CURRENT,
 						},
+						dev: {
+							v: {
+								appV: fwVersion,
+							},
+							ts: Date.now(),
+						},
 					})
 				}, 10 * 1000)
 			}
