@@ -163,6 +163,10 @@ export const connectCommand = ({
 				deviceId: deviceId,
 				onUpdate: updateTwinReported,
 				onMessage: (message) => {
+					console.log(
+						chalk.magenta('>'),
+						chalk.yellow(deviceTopics.messages(deviceId)),
+					)
 					console.log(chalk.magenta('>'), chalk.cyan(JSON.stringify(message)))
 					client.publish(
 						deviceTopics.messages(deviceId),

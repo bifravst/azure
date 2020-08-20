@@ -80,6 +80,16 @@ export const deviceStepRunners = ({
 			)
 		}),
 		regexGroupMatcher(
+			/^the (?:device|cat tracker) "(?<deviceId>[^"]+)" publishes this message to the topic (?<topic>.+)$/,
+		)(async ({ deviceId, topic }, step) => {
+			if (step.interpolatedArgument === undefined) {
+				throw new Error('Must provide argument!')
+			}
+			const message = JSON.parse(step.interpolatedArgument)
+			const connection = connections[deviceId]
+			connection.publish(topic, JSON.stringify(message))
+		}),
+		regexGroupMatcher(
 			/^the (?<desiredOrReported>desired|reported) state of the (?:device|cat tracker) "(?<deviceId>[^"]+)" (?:should )?(?<equalOrMatch>equals?|match(?:es)?)$/,
 		)(async ({ desiredOrReported, deviceId, equalOrMatch }, step) => {
 			if (step.interpolatedArgument === undefined) {
