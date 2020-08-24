@@ -173,6 +173,14 @@ export const connectCommand = ({
 						JSON.stringify(message),
 					)
 				},
+				onBatch: (update) => {
+					console.log(
+						chalk.magenta('>'),
+						chalk.yellow(deviceTopics.batch(deviceId)),
+					)
+					console.log(chalk.magenta('>'), chalk.cyan(JSON.stringify(update)))
+					client.publish(deviceTopics.batch(deviceId), JSON.stringify(update))
+				},
 				onWsConnection: (c) => {
 					console.log(chalk.magenta('[ws]'), chalk.cyan('connected'))
 					wsConnection = c
