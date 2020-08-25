@@ -10,7 +10,7 @@ Feature: Device: Batch Data
 
   Scenario: Devices can publish batch data
 
-    Given the cat tracker "{catId}" publishes this message to the topic devices/{catId}/messages/events/?batch
+    Given the cat tracker "{catId}" publishes this message to the topic devices/{catId}/messages/events/batch
       """
       {
         "gps": [

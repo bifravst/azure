@@ -20,5 +20,5 @@ export const deviceTopics = {
 	messages: (deviceId: string): string =>
 		`devices/${deviceId}/messages/events/`,
 	batch: (deviceId: string): string =>
-		`devices/${deviceId}/messages/events/?batch`,
+		`devices/${deviceId}/messages/events/batch`,
 }
