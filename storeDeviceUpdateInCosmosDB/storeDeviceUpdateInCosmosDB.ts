@@ -18,15 +18,14 @@ const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 		source: context.bindingData.systemProperties['iothub-message-source'],
 	} as const
 
-	let document: typeof baseDoc & {
-		deviceUpdate: DeviceUpdate | DeviceUpdate[]
-	}
+	type Document = typeof baseDoc & { deviceUpdate: DeviceUpdate }
+	let document: Document | Document[]
 
 	if (context?.bindingData?.properties?.batch !== undefined) {
-		document = {
+		document = batchToDoc(update as BatchDeviceUpdate).map((deviceUpdate) => ({
 			...baseDoc,
-			deviceUpdate: batchToDoc(update as BatchDeviceUpdate),
-		}
+			deviceUpdate,
+		}))
 	} else {
 		document = {
 			...baseDoc,
