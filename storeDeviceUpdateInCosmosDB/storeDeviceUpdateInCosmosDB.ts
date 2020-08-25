@@ -17,7 +17,7 @@ const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 		source: context.bindingData.systemProperties['iothub-message-source'],
 	}
 
-	log(context)(doc)
+	log(context)({ doc, context })
 
 	context.bindings.deviceUpdate = JSON.stringify(doc)
 
