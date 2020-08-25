@@ -19,4 +19,6 @@ export const deviceTopics = {
 		`$iothub/twin/res/${status}/?$rid=${rid}`,
 	messages: (deviceId: string): string =>
 		`devices/${deviceId}/messages/events/`,
+	batch: (deviceId: string): string =>
+		`devices/${deviceId}/messages/events/batch`,
 }
