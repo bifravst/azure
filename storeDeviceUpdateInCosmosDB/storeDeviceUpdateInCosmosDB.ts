@@ -10,6 +10,7 @@ const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 	context: Context,
 	update: DeviceUpdate | BatchDeviceUpdate,
 ): Promise<void> => {
+	log(context)({ context, update })
 	const baseDoc = {
 		deviceId:
 			context.bindingData.systemProperties['iothub-connection-device-id'],
@@ -34,7 +35,7 @@ const storeDeviceUpdateInCosmosDB: AzureFunction = async (
 	}
 
 	context.bindings.deviceUpdate = JSON.stringify(document)
-	log(context)({ context, document })
+	log(context)({ document })
 
 	context.done()
 }
