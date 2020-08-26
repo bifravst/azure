@@ -31,7 +31,7 @@
     "@azure/cosmos": "3.9.0",
     "@azure/ms-rest-azure-js": "2.0.1",
     "@azure/ms-rest-js": "2.0.8",
-    "@azure/ms-rest-nodeauth": "2.0.5",
+    "@azure/ms-rest-nodeauth": "3.0.5",
     "@azure/storage-blob": "12.1.2",
     "@bifravst/device-ui-server": "2.0.0",
     "@bifravst/random-words": "4.2.1",
