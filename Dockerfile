@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as base
+FROM ubuntu:18.10 as base
 WORKDIR /workdir
 
 RUN \
