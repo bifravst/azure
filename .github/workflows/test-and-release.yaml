@@ -53,18 +53,22 @@ jobs:
       - name: Run Unit Tests
         run: npm test
       - name: Deploy solution
-        run: |
-          az deployment group create \
-            --resource-group ${RESOURCE_GROUP_NAME} \
-            --mode Complete \
-            --name ${{ github.sha }} \
-            --template-file azuredeploy.json \
-            --parameters \
-              appName=${APP_NAME} \
-              location=${LOCATION} \
-              appRegistrationClientId=${APP_REG_CLIENT_ID} \
-              b2cTenant=${B2C_TENANT} \
-              b2cFlowName=B2C_1_developer
+        uses: nick-invision/retry@v1
+        with:
+          retry_wait_seconds: 18000
+          max_attempts: 3
+          command: |
+            az deployment group create \
+              --resource-group ${RESOURCE_GROUP_NAME} \
+              --mode Complete \
+              --name ${{ github.sha }} \
+              --template-file azuredeploy.json \
+              --parameters \
+                appName=${APP_NAME} \
+                location=${LOCATION} \
+                appRegistrationClientId=${APP_REG_CLIENT_ID} \
+                b2cTenant=${B2C_TENANT} \
+                b2cFlowName=B2C_1_developer
       - name: Deploy Function App
         run: func azure functionapp publish ${APP_NAME}api --typescript
       - name: Determine API endpoint
