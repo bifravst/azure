@@ -55,6 +55,7 @@ jobs:
       - name: Deploy solution
         uses: nick-invision/retry@v1
         with:
+          timeout_minutes: 10
           retry_wait_seconds: 18000
           max_attempts: 3
           command: |
