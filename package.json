@@ -47,7 +47,7 @@
   "devDependencies": {
     "@azure/arm-deviceprovisioningservices": "2.1.0",
     "@azure/functions": "1.2.2",
-    "@bifravst/code-style": "8.0.61",
+    "@bifravst/code-style": "8.0.62",
     "@bifravst/e2e-bdd-test-runner": "2.6.0",
     "@commitlint/cli": "9.1.2",
     "@commitlint/config-angular": "9.1.2",
