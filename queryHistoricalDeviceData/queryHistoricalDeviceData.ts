@@ -2,7 +2,7 @@ import { AzureFunction, Context, HttpRequest } from '@azure/functions'
 import { log } from '../lib/log'
 import { r } from '../lib/http'
 import { CosmosClient } from '@azure/cosmos'
-import { parseConnectionString } from './parseConnectionString'
+import { parseConnectionString } from '../lib/parseConnectionString'
 import { fromEnv } from '../lib/fromEnv'
 
 const { connectionString } = fromEnv({

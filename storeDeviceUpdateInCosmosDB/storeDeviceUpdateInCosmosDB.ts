@@ -1,7 +1,7 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { log } from '../lib/log'
 import { DeviceUpdate, BatchDeviceUpdate } from '../lib/iotMessages'
-import { batchToDoc } from './batchToDoc'
+import { batchToDoc } from '../lib/batchToDoc'
 
 /**
  * Store Device Twin Update in Cosmos DB so it can be queried later
