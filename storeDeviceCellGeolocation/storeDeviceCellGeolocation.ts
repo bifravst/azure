@@ -9,6 +9,7 @@ import {
 	TwinChangeEvent,
 } from '../lib/iotMessages'
 import { batchToDoc } from '../lib/batchToDoc'
+import { cellId } from '@bifravst/cell-geolocation-helpers'
 
 const { connectionString } = fromEnv({
 	connectionString: 'HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING',
@@ -32,52 +33,80 @@ const queryCellGeolocation: AzureFunction = async (
 	log(context)({ update })
 	const deviceId =
 		context.bindingData.systemProperties['iothub-connection-device-id']
-	const updates: DeviceUpdate[] = []
+
+	type GpsUpdate = {
+		v: { lat: number; lng: number; acc?: number }
+		ts: number
+	}
+	const gpsUpdates: GpsUpdate[] = []
 
 	if (context?.bindingData?.properties?.batch !== undefined) {
-		updates.push(...batchToDoc(update as BatchDeviceUpdate))
+		log(context)({ batch: batchToDoc(update as BatchDeviceUpdate) })
+		gpsUpdates.push(
+			...(batchToDoc(update as BatchDeviceUpdate)
+				.filter(({ gps }) => gps !== undefined)
+				.map(({ gps }) => gps) as GpsUpdate[]),
+		)
 	} else {
-		updates.push(update as DeviceUpdate)
+		if ((update as TwinChangeEvent)?.properties?.reported?.gps !== undefined) {
+			gpsUpdates.push((update as TwinChangeEvent)?.properties?.reported?.gps)
+		}
 	}
-
-	const gpsUpdates = updates.filter(
-		(u) => (u as TwinChangeEvent)?.properties?.reported?.gps !== undefined,
-	) as TwinChangeEvent[]
 
 	if (gpsUpdates.length == 0) {
 		context.done()
 		return
 	}
 
-	const coordinates = gpsUpdates.map(
-		({ properties }) => properties?.reported?.gps,
-	) as { v: { lat: number; lng: number }; ts: number }[]
+	log(context)({ gpsUpdates })
 
-	log(context)({ coordinates })
-
-	const roamingPositions = await Promise.all(
-		coordinates.map(async ({ ts }) =>
-			container.items
-				.query(
-					`SELECT 
-c.deviceUpdate.roam.v.cell AS cell,
-c.deviceUpdate.roam.v.mccmnc AS mccmnc,
-c.deviceUpdate.roam.v.area AS area
-FROM c
-WHERE c.deviceUpdate.roam.v != null
-AND c.deviceUpdate.roam.ts < ${ts}
-AND c.deviceId = "${deviceId}"
-ORDER BY c.timestamp DESC
-OFFSET 0 LIMIT 1
-`,
-				)
-				.fetchAll(),
-		),
-	)
+	const roamingPositions = (await Promise.all(
+		gpsUpdates.map(async ({ ts, v }) => {
+			const sql = `SELECT 
+			 c.deviceUpdate.properties.reported.roam.v.cell AS cell,
+			 c.deviceUpdate.properties.reported.roam.v.mccmnc AS mccmnc,
+			 c.deviceUpdate.properties.reported.roam.v.area AS area
+			 FROM c
+			 WHERE c.deviceUpdate.properties.reported.roam.v != null
+			 AND c.deviceId = "${deviceId}"
+			 AND c.deviceUpdate.properties.reported.roam.ts < ${ts}
+			 ORDER BY c.timestamp DESC
+			 OFFSET 0 LIMIT 1
+			 `
+			const { cell, mccmnc, area } = ((
+				await container.items.query(sql).fetchAll()
+			).resources as {
+				cell: number
+				mccmnc: number
+				area: number
+			}[])[0]
+			return {
+				cellId: cellId({ cell, mccmnc, area }),
+				cell,
+				mccmnc,
+				area,
+				lat: v.lat,
+				lng: v.lng,
+				acc: v.acc,
+				ts,
+				deviceId,
+			}
+		}),
+	)) as {
+		cellId: string
+		cell: number
+		mccmnc: number
+		area: number
+		lat: number
+		lng: number
+		acc?: number
+		ts: number
+	}[]
 
 	log(context)({ roamingPositions })
 
-	// FIXME: Merge and persist
+	// Persist in CosmosDB
+	context.bindings.deviceCellGeolocation = JSON.stringify(roamingPositions)
 
 	context.done()
 }
