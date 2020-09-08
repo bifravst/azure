@@ -144,7 +144,7 @@
     {
       "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
       "apiVersion": "2020-03-01",
-      "name": "[concat(parameters('appName'), 'IotHub', '/events/cellGeolocation')]",
+      "name": "[concat(parameters('appName'), 'IotHub', '/events/cellgeolocation')]",
       "dependsOn": [
         "[resourceId('Microsoft.Devices/IotHubs', concat(parameters('appName'), 'IotHub'))]"
       ]

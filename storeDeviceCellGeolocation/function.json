@@ -7,7 +7,7 @@
       "eventHubName": "%IoTHubEventHubName%",
       "cardinality": "one",
       "connection": "IoTHubEventHubCompatibleConnectionString",
-      "consumerGroup": "cellGeolocation"
+      "consumerGroup": "cellgeolocation"
     },
     {
       "name": "deviceCellGeolocation",
@@ -20,5 +20,5 @@
       "direction": "out"
     }
   ],
-  "scriptFile": "../dist/cellGeolocation/cellGeolocation.js"
+  "scriptFile": "../dist/storeDeviceCellGeolocation/storeDeviceCellGeolocation.js"
 }
