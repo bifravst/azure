@@ -49,19 +49,23 @@ const queryCellGeolocation: AzureFunction = async (
 		return
 	}
 
-	log(context)({ gpsUpdates })
+	const coordinates = gpsUpdates.map(
+		({ properties }) => properties?.reported?.gps,
+	) as { v: { lat: number; lng: number }; ts: number }[]
+
+	log(context)({ coordinates })
 
 	const roamingPositions = await Promise.all(
-		gpsUpdates.map(async ({ properties }) =>
+		coordinates.map(async ({ ts }) =>
 			container.items
 				.query(
 					`SELECT 
 c.deviceUpdate.roam.v.cell AS cell,
 c.deviceUpdate.roam.v.mccmnc AS mccmnc,
-c.deviceUpdate.roam.v.area AS area,
+c.deviceUpdate.roam.v.area AS area
 FROM c
 WHERE c.deviceUpdate.roam.v != null
-AND c.deviceUpdate.roam.ts < ${properties?.reported?.ts}
+AND c.deviceUpdate.roam.ts < ${ts}
 AND c.deviceId = "${deviceId}"
 ORDER BY c.timestamp DESC
 OFFSET 0 LIMIT 1
