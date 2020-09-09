@@ -61,8 +61,9 @@ const queryCellGeolocation: AzureFunction = async (
 	log(context)({ gpsUpdates })
 
 	const roamingPositions = (await Promise.all(
-		gpsUpdates.map(async ({ ts, v }) => {
-			const sql = `SELECT 
+		gpsUpdates
+			.map(async ({ ts, v }) => {
+				const sql = `SELECT 
 			 c.deviceUpdate.properties.reported.roam.v.cell AS cell,
 			 c.deviceUpdate.properties.reported.roam.v.mccmnc AS mccmnc,
 			 c.deviceUpdate.properties.reported.roam.v.area AS area
@@ -73,25 +74,26 @@ const queryCellGeolocation: AzureFunction = async (
 			 ORDER BY c.timestamp DESC
 			 OFFSET 0 LIMIT 1
 			 `
-			const { cell, mccmnc, area } = ((
-				await container.items.query(sql).fetchAll()
-			).resources as {
-				cell: number
-				mccmnc: number
-				area: number
-			}[])[0]
-			return {
-				cellId: cellId({ cell, mccmnc, area }),
-				cell,
-				mccmnc,
-				area,
-				lat: v.lat,
-				lng: v.lng,
-				acc: v.acc,
-				ts,
-				deviceId,
-			}
-		}),
+				const res: {
+					cell: number
+					mccmnc: number
+					area: number
+				}[] = (await container.items.query(sql).fetchAll()).resources
+				if (res.length === 0) return
+				const { cell, mccmnc, area } = res[0]
+				return {
+					cellId: cellId({ cell, mccmnc, area }),
+					cell,
+					mccmnc,
+					area,
+					lat: v.lat,
+					lng: v.lng,
+					acc: v.acc,
+					ts,
+					deviceId,
+				}
+			})
+			.filter((r) => r !== undefined),
 	)) as {
 		cellId: string
 		cell: number
@@ -104,6 +106,11 @@ const queryCellGeolocation: AzureFunction = async (
 	}[]
 
 	log(context)({ roamingPositions })
+
+	if (roamingPositions.length === 0) {
+		context.done()
+		return
+	}
 
 	// Persist in CosmosDB
 	context.bindings.deviceCellGeolocation = JSON.stringify(roamingPositions)
