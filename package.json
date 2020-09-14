@@ -41,7 +41,7 @@
     "deepmerge": "4.2.2",
     "mqtt": "4.2.1",
     "node-fetch": "2.6.1",
-    "snyk": "1.394.0",
+    "snyk": "1.395.0",
     "uuid": "8.3.0"
   },
   "devDependencies": {
