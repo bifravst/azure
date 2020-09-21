@@ -10,6 +10,7 @@ import {
 } from '../lib/iotMessages'
 import { batchToDoc } from '../lib/batchToDoc'
 import { cellId } from '@bifravst/cell-geolocation-helpers'
+import { exponential } from 'backoff'
 
 const { connectionString } = fromEnv({
 	connectionString: 'HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING',
@@ -60,10 +61,12 @@ const queryCellGeolocation: AzureFunction = async (
 
 	log(context)({ gpsUpdates })
 
-	const roamingPositions = (await Promise.all(
-		gpsUpdates
-			.map(async ({ ts, v }) => {
-				const sql = `SELECT 
+	const roamingPositions = (
+		await Promise.all(
+			gpsUpdates.map(
+				async ({ ts, v }) =>
+					new Promise((resolve) => {
+						const sql = `SELECT 
 			 c.deviceUpdate.properties.reported.roam.v.cell AS cell,
 			 c.deviceUpdate.properties.reported.roam.v.mccmnc AS mccmnc,
 			 c.deviceUpdate.properties.reported.roam.v.area AS area
@@ -74,27 +77,46 @@ const queryCellGeolocation: AzureFunction = async (
 			 ORDER BY c.timestamp DESC
 			 OFFSET 0 LIMIT 1
 			 `
-				const res: {
-					cell: number
-					mccmnc: number
-					area: number
-				}[] = (await container.items.query(sql).fetchAll()).resources
-				if (res.length === 0) return
-				const { cell, mccmnc, area } = res[0]
-				return {
-					cellId: cellId({ cell, mccmnc, area }),
-					cell,
-					mccmnc,
-					area,
-					lat: v.lat,
-					lng: v.lng,
-					acc: v.acc,
-					ts,
-					deviceId,
-				}
-			})
-			.filter((r) => r !== undefined),
-	)) as {
+						log(context)({ sql })
+						const b = exponential({
+							randomisationFactor: 0,
+							initialDelay: 1000,
+							maxDelay: 5800,
+						})
+						b.failAfter(5)
+						b.on('ready', async (attempt) => {
+							log(context)({ attempt })
+							const res: {
+								cell: number
+								mccmnc: number
+								area: number
+							}[] = (await container.items.query(sql).fetchAll()).resources
+							log(context)({ res })
+							if (res.length === 0) {
+								b.backoff()
+								return
+							}
+							const { cell, mccmnc, area } = res[0]
+							resolve({
+								cellId: cellId({ cell, mccmnc, area }),
+								cell,
+								mccmnc,
+								area,
+								lat: v.lat,
+								lng: v.lng,
+								acc: v.acc,
+								ts,
+								deviceId,
+							})
+						})
+						b.on('fail', () => {
+							resolve()
+						})
+						b.backoff()
+					}),
+			),
+		)
+	).filter((r) => r !== undefined) as {
 		cellId: string
 		cell: number
 		mccmnc: number
