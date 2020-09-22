@@ -1,0 +1,24 @@
+{
+  "bindings": [
+    {
+      "name": "update",
+      "type": "eventHubTrigger",
+      "direction": "in",
+      "eventHubName": "%IoTHubEventHubName%",
+      "cardinality": "one",
+      "connection": "IoTHubEventHubCompatibleConnectionString",
+      "consumerGroup": "cellgeolocation"
+    },
+    {
+      "name": "deviceCellGeolocation",
+      "type": "cosmosDB",
+      "databaseName": "cellGeolocation",
+      "collectionName": "deviceCellGeolocations",
+      "createIfNotExists": true,
+      "partitionKey": "/cellId",
+      "connectionStringSetting": "HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING",
+      "direction": "out"
+    }
+  ],
+  "scriptFile": "../dist/storeDeviceCellGeolocation/storeDeviceCellGeolocation.js"
+}
