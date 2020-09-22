@@ -56,7 +56,6 @@ Feature: Cell Geolocation API
         And the Content-Type header is "application/json; charset=utf-8"
         When I GET /cellgeolocation?cell={cellId}&area=211&mccmnc=26201
         Then the response status code should be 200
-        And the response Access-Control-Allow-Origin should be "*"
         And the response Content-Type should be "application/json"
         And the response should equal this JSON
             """
