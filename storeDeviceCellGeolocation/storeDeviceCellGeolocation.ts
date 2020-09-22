@@ -85,7 +85,7 @@ const queryCellGeolocation: AzureFunction = async (
 						})
 						b.failAfter(5)
 						b.on('ready', async (attempt) => {
-							log(context)({ attempt })
+							log(context)({ attempt: attempt + 1 })
 							const res: {
 								cell: number
 								mccmnc: number
