@@ -37,7 +37,7 @@
     "@bifravst/device-ui-server": "2.0.1",
     "@bifravst/random-words": "4.2.1",
     "@types/backoff": "2.5.1",
-    "azure-iot-provisioning-service": "1.8.5",
+    "azure-iot-provisioning-service": "1.8.6",
     "azure-iothub": "1.13.0",
     "backoff": "2.5.0",
     "chalk": "4.1.0",
