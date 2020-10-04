@@ -45,7 +45,7 @@
     "mqtt": "4.2.1",
     "node-fetch": "2.6.1",
     "snyk": "1.406.0",
-    "uuid": "8.3.0"
+    "uuid": "8.3.1"
   },
   "devDependencies": {
     "@azure/arm-deviceprovisioningservices": "2.1.0",
