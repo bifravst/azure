@@ -75,7 +75,7 @@ jobs:
       - name: Determine API endpoint
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
-          echo "::set-env name=API_ENDPOINT::${API_ENDPOINT}"
+          echo "API_ENDPOINT=${API_ENDPOINT}" >> $GITHUB_ENV
       - name: Cache certificates
         uses: actions/cache@v2
         with:
@@ -83,7 +83,7 @@ jobs:
           key: certificates-${{ env.TENANT_ID }}
       - run: |
           ls ./certificates/CA.intermediate.* 1> /dev/null 2>&1
-          echo "::set-env name=SKIP_CERT_GENERATION::1"
+          echo "SKIP_CERT_GENERATION=1" >> $GITHUB_ENV
         continue-on-error: true
       - name: Create Intermediate CA certificate
         if: env.SKIP_CERT_GENERATION != '1'
@@ -93,7 +93,7 @@ jobs:
           node cli create-ca-intermediate
       - run: |
           TENANT_ID=`echo ${AZURE_CREDENTIALS} | jq -r '.tenantId' | tr -d '\n'`
-          echo "::set-env name=TENANT_ID::${TENANT_ID}"
+          echo "TENANT_ID=${TENANT_ID}" >> $GITHUB_ENV
       - name: Run End-to-End Tests
         uses: nick-invision/retry@v1
         env:

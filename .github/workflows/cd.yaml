@@ -25,7 +25,7 @@ jobs:
           TAG=`git tag --contains ${{ github.sha }} | tr -d '\n'`
           VERSION=${TAG:-${{ github.sha }}}
           echo Version: ${VERSION}
-          echo "::set-env name=VERSION::${VERSION}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Install Azure CLI
         run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
       - name: Install Azures Functions CLI
@@ -71,8 +71,8 @@ jobs:
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
           APP_URL=`az storage account show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}app --query 'primaryEndpoints.web' --output tsv | tr -d '\n'`
-          echo "::set-env name=APP_URL::${APP_URL}"
-          echo "::set-env name=API_ENDPOINT::${API_ENDPOINT}"
+          echo "APP_URL=${APP_URL}" >> $GITHUB_ENV
+          echo "API_ENDPOINT=${API_ENDPOINT}" >> $GITHUB_ENV
       - name: Build app
         run: |
           echo Hosting at ${{ env.APP_URL }}
