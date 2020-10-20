@@ -53,7 +53,7 @@ jobs:
       - name: Run Unit Tests
         run: npm test
       - name: Deploy solution
-        uses: nick-invision/retry@v1
+        uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
           retry_wait_seconds: 18000
@@ -95,7 +95,7 @@ jobs:
           TENANT_ID=`echo ${AZURE_CREDENTIALS} | jq -r '.tenantId' | tr -d '\n'`
           echo "TENANT_ID=${TENANT_ID}" >> $GITHUB_ENV
       - name: Run End-to-End Tests
-        uses: nick-invision/retry@v1
+        uses: nick-invision/retry@v2
         env:
           FORCE_COLOR: 3
         with:
