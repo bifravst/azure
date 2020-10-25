@@ -65,7 +65,7 @@
     "chai-subset": "1.6.0",
     "chalk": "4.1.0",
     "check-node-version": "4.0.3",
-    "commander": "6.1.0",
+    "commander": "6.2.0",
     "husky": "4.3.0",
     "jest": "26.6.1",
     "pem": "1.14.4",
