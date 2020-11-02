@@ -38,7 +38,7 @@
     "@bifravst/random-words": "4.2.1",
     "@types/backoff": "2.5.1",
     "azure-iot-provisioning-service": "1.8.7",
-    "azure-iothub": "1.13.0",
+    "azure-iothub": "1.13.1",
     "backoff": "2.5.0",
     "chalk": "4.1.0",
     "deepmerge": "4.2.2",
