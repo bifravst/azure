@@ -429,9 +429,7 @@
         "resource": {
           "id": "deviceMessages"
         },
-        "options": {
-          "throughput": 400
-        }
+        "options": {}
       }
     },
     {
@@ -474,7 +472,10 @@
                 "order": "ascending"
               }
             ]
-          ]
+          ],
+          "autoscaleSettings": {
+            "maxThroughput": 4000
+          }
         }
       }
     },
@@ -489,9 +490,7 @@
         "resource": {
           "id": "cellGeolocation"
         },
-        "options": {
-          "throughput": 400
-        }
+        "options": {}
       }
     },
     {
@@ -534,7 +533,10 @@
                 "order": "ascending"
               }
             ]
-          ]
+          ],
+          "autoscaleSettings": {
+            "maxThroughput": 4000
+          }
         }
       }
     }

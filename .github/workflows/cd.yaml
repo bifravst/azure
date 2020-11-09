@@ -54,7 +54,7 @@ jobs:
           az deployment group create \
             --resource-group $RESOURCE_GROUP_NAME \
             --mode Complete \
-            --name ${{ env.VERSION }} \
+            --name cd-${{ env.VERSION }} \
             --template-file azuredeploy.json \
             --parameters \
               appName=$APP_NAME \
