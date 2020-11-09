@@ -2,14 +2,12 @@ import * as chalk from 'chalk'
 import { ComandDefinition } from './CommandDefinition'
 import { randomWords } from '@bifravst/random-words'
 import { generateDeviceCertificate } from '../iot/generateDeviceCertificate'
-import { IotHubClient } from '@azure/arm-iothub'
 import { log, debug } from '../logging'
 import { list as listIntermediateCerts } from '../iot/intermediateRegistry'
 
 export const createDeviceCertCommand = ({
 	certsDir,
 }: {
-	iotClient: () => Promise<IotHubClient>
 	certsDir: string
 }): ComandDefinition => ({
 	command: 'create-device-cert',

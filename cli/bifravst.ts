@@ -3,7 +3,6 @@ import * as chalk from 'chalk'
 import * as path from 'path'
 import * as fs from 'fs'
 import { createCARootCommand } from './commands/create-ca-root'
-import { IotHubClient } from '@azure/arm-iothub'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from '@azure/ms-rest-nodeauth'
 import { createDeviceCertCommand } from './commands/create-device-cert'
@@ -101,13 +100,9 @@ const bifravstCLI = async () => {
 		deploymentName: deployment,
 		credentials: getCurrentCreds,
 	})
-	const getIotDpsClient = async () => getCurrentCreds().then(
-			(creds) => new IotDpsClient(creds as any, creds.tokenInfo.subscription) // FIXME: This removes a TypeScript incompatibility error
-	)
-
-	const getIotClient = async () =>
+	const getIotDpsClient = async () =>
 		getCurrentCreds().then(
-			(creds) => new IotHubClient(creds, creds.tokenInfo.subscription),
+			(creds) => new IotDpsClient(creds as any, creds.tokenInfo.subscription), // FIXME: This removes a TypeScript incompatibility error
 		)
 
 	program.description('Bifravst Command Line Interface')
@@ -130,7 +125,6 @@ const bifravstCLI = async () => {
 			ioTHubDPSConnectionString: getIotHubConnectionString,
 		}),
 		createDeviceCertCommand({
-			iotClient: getIotClient,
 			certsDir,
 		}),
 		connectCommand({
