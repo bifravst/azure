@@ -407,14 +407,29 @@
     },
     {
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "apiVersion": "2020-03-01",
+      "apiVersion": "2020-06-01-preview",
       "name": "[parameters('appName')]",
       "location": "[parameters('location')]",
       "properties": {
-        "enableFreeTier": true,
+        "publicNetworkAccess": "Enabled",
+        "createMode": "Default",
         "databaseAccountOfferType": "Standard",
         "consistencyPolicy": {
-          "defaultConsistencyLevel": "Session"
+          "defaultConsistencyLevel": "Session",
+          "maxIntervalInSeconds": 5,
+          "maxStalenessPrefix": 100
+        },
+        "capabilities": [
+          {
+            "name": "EnableServerless"
+          }
+        ],
+        "backupPolicy": {
+          "type": "Periodic",
+          "periodicModeProperties": {
+            "backupIntervalInMinutes": 1440,
+            "backupRetentionIntervalInHours": 168
+          }
         }
       }
     },
@@ -472,10 +487,7 @@
                 "order": "ascending"
               }
             ]
-          ],
-          "autoscaleSettings": {
-            "maxThroughput": 4000
-          }
+          ]
         }
       }
     },
@@ -533,10 +545,7 @@
                 "order": "ascending"
               }
             ]
-          ],
-          "autoscaleSettings": {
-            "maxThroughput": 4000
-          }
+          ]
         }
       }
     }
