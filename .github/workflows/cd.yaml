@@ -67,21 +67,13 @@ jobs:
           az storage blob service-properties update --auth-mode login
           --account-name ${APP_NAME}app --static-website --404-document
           index.html --index-document index.html
-      - name: Determine Web App endpoints
+      - name: Determine Web App settings
         run: |
-          API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
-          APP_URL=`az storage account show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}app --query 'primaryEndpoints.web' --output tsv | tr -d '\n'`
-          echo "APP_URL=${APP_URL}" >> $GITHUB_ENV
-          echo "API_ENDPOINT=${API_ENDPOINT}" >> $GITHUB_ENV
+          node cli react-config >> $GITHUB_ENV
       - name: Build app
         run: |
-          echo Hosting at ${{ env.APP_URL }}
-          echo API at ${{ env.API_ENDPOINT }}
+          echo Hosting at ${{ env.REACT_APP_URL }}
           export EXTEND_ESLINT=true
-          export REACT_APP_CLOUD_FLAVOUR=AZURE
-          export REACT_APP_AZURE_AD_B2C_TENANT=${{ env.B2C_TENANT }}
-          export REACT_APP_AZURE_CLIENT_ID=${{ env.APP_REG_CLIENT_ID }}
-          export REACT_APP_AZURE_API_ENDPOINT=${{ env.API_ENDPOINT }}
           git clone https://github.com/bifravst/app
           cd app
           APP_TAG=`git tag --points-at HEAD | tr -d '\n'`
@@ -99,5 +91,5 @@ jobs:
         with:
           token: ${{ github.token }}
           environment: production
-          environment_url: ${{ env.APP_URL }}
+          environment_url: ${{ env.REACT_APP_URL }}
           state: success

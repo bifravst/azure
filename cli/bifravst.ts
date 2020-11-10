@@ -6,6 +6,7 @@ import { createCARootCommand } from './commands/create-ca-root'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from '@azure/ms-rest-nodeauth'
 import { WebSiteManagementClient } from '@azure/arm-appservice'
+import { StorageManagementClient } from '@azure/arm-storage'
 import { createDeviceCertCommand } from './commands/create-device-cert'
 import { connectCommand } from './commands/connect'
 import { proofCARootPossessionCommand } from './commands/proof-ca-possession'
@@ -111,6 +112,11 @@ const bifravstCLI = async () => {
 			(creds) =>
 				new WebSiteManagementClient(creds, creds.tokenInfo.subscription),
 		)
+	const getStoreageClient = async () =>
+		getCurrentCreds().then(
+			(creds) =>
+				new StorageManagementClient(creds, creds.tokenInfo.subscription),
+		)
 
 	program.description('Bifravst Command Line Interface')
 
@@ -142,6 +148,7 @@ const bifravstCLI = async () => {
 		}),
 		reactConfigCommand({
 			websiteClient: getWebsiteClient,
+			storageClient: getStoreageClient,
 			resourceGroup,
 		}),
 	]
