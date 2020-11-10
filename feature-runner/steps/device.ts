@@ -50,7 +50,7 @@ export const deviceStepRunners = ({
 				dps: async () => {
 					const creds = await AzureCliCredentials.create()
 					const dpsClient = new IotDpsClient(
-						creds,
+						creds as any,
 						creds.tokenInfo.subscription,
 					)
 					const dps = await dpsClient.iotDpsResource.get(

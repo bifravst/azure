@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import { createCARootCommand } from './commands/create-ca-root'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { AzureCliCredentials } from '@azure/ms-rest-nodeauth'
+import { WebSiteManagementClient } from '@azure/arm-appservice'
 import { createDeviceCertCommand } from './commands/create-device-cert'
 import { connectCommand } from './commands/connect'
 import { proofCARootPossessionCommand } from './commands/proof-ca-possession'
@@ -15,6 +16,7 @@ import {
 	deploymentName,
 } from '../arm/resources'
 import fetch from 'node-fetch'
+import { reactConfigCommand } from './commands/react-config'
 
 const version = JSON.parse(
 	fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'),
@@ -72,8 +74,8 @@ const creds = async () => {
 		tokenInfo: { subscription },
 	} = creds
 
-	console.log(chalk.magenta('Subscription:'), chalk.yellow(subscription))
-	console.log(
+	console.error(chalk.magenta('Subscription:'), chalk.yellow(subscription))
+	console.error(
 		chalk.magenta('Resource Group:'),
 		chalk.yellow(resourceGroupName()),
 	)
@@ -104,6 +106,11 @@ const bifravstCLI = async () => {
 		getCurrentCreds().then(
 			(creds) => new IotDpsClient(creds as any, creds.tokenInfo.subscription), // FIXME: This removes a TypeScript incompatibility error
 		)
+	const getWebsiteClient = async () =>
+		getCurrentCreds().then(
+			(creds) =>
+				new WebSiteManagementClient(creds, creds.tokenInfo.subscription),
+		)
 
 	program.description('Bifravst Command Line Interface')
 
@@ -131,6 +138,10 @@ const bifravstCLI = async () => {
 			iotDpsClient: getIotDpsClient,
 			certsDir,
 			version,
+			resourceGroup,
+		}),
+		reactConfigCommand({
+			websiteClient: getWebsiteClient,
 			resourceGroup,
 		}),
 	]
