@@ -53,7 +53,8 @@ Feature: Device Firmware Upgrade over the air
           "fwLocation": {
             "host": "{fwLocationHost}",
             "path": "{fwLocationPath}"
-          }
+          },
+				  "fwFragmentSize": 1800
         }
       }
       """
@@ -81,7 +82,8 @@ Feature: Device Firmware Upgrade over the air
           "fwLocation": {
             "host": "{fwLocationHost}",
             "path": "{fwLocationPath}"
-          }
+          },
+          "fwFragmentSize": 1800
         }
       }
       """

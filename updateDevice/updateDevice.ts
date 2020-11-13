@@ -45,6 +45,8 @@ const updateDevice: AzureFunction = async (
 			if (firmware !== undefined) {
 				const { fwPackageURI } = firmware
 				firmware.fwLocation = url.parse(fwPackageURI)
+				// See https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/include/net/azure_fota.html
+				firmware.fwFragmentSize = firmware.fwFragmentSize ?? 1800
 			}
 
 			await registry.updateTwin(
