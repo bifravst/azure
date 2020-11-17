@@ -40,10 +40,12 @@ Feature: Device Firmware Upgrade over the air
       """
     Then the response status code should be 202
 
+  # Rule: fwLocationPath has no leading slash
+
   Scenario: Fetch the job as a device and mark as in progress
 
     Given I store "$match(fwPackageURI,/^https?:\/\/([^\/]+)/).groups[0]" into "fwLocationHost"
-    And I store "$match(fwPackageURI,/^https?:\/\/[^\/]+(\/.+)/).groups[0]" into "fwLocationPath"
+    And I store "$substring($match(fwPackageURI,/^https?:\/\/[^\/]+(\/.+)/).groups[0], 1)" into "fwLocationPath"
     When the desired state of the cat tracker "{catId}" matches
       """
       {

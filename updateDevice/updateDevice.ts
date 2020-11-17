@@ -44,7 +44,11 @@ const updateDevice: AzureFunction = async (
 
 			if (firmware !== undefined) {
 				const { fwPackageURI } = firmware
-				firmware.fwLocation = url.parse(fwPackageURI)
+				const parsed = url.parse(fwPackageURI)
+				firmware.fwLocation = {
+					...parsed,
+					path: parsed.path?.substr(1), // Remove leading slash
+				}
 				// See https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/include/net/azure_fota.html
 				firmware.fwFragmentSize = firmware.fwFragmentSize ?? 1800
 			}
