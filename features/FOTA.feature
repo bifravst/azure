@@ -110,7 +110,7 @@ Feature: Device Firmware Upgrade over the air
 
   Scenario: Download firmware using HTTP (the nRF9160 implementation does this)
 
-    When I download the firmware from http://{fwLocationHost}{fwLocationPath}
+    When I download the firmware from http://{fwLocationHost}/{fwLocationPath}
     Then the firmware file should contain this payload
       """
       1.0.1 FIRMWARE HEX FILE
