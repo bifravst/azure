@@ -30,35 +30,25 @@ const storeDeviceUpdate: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
-	const { body, ...rest } = req
+	const { body } = req
 	log(context)({
-		req: rest,
 		fotaStorageAccountName,
 		fotaStorageAccessKey,
 		bodyLength: body.length,
 	})
 	try {
 		const id = v4()
-		const firmwareFile = Buffer.from(body, 'base64')
 		const blobName = `${id}.bin`
 		const blockBlobClient = containerClient.getBlockBlobClient(blobName)
-		const uploadBlobResponse = await blockBlobClient.upload(
-			firmwareFile,
-			firmwareFile.length,
-			{
-				blobHTTPHeaders: {
-					blobContentType: 'text/octet-stream',
-					blobCacheControl: 'public, max-age=31536000',
-				},
+		const file = Buffer.from(body, 'base64')
+		await blockBlobClient.upload(file, file.length, {
+			blobHTTPHeaders: {
+				blobContentType: 'text/octet-stream',
+				blobCacheControl: 'public, max-age=31536000',
 			},
-		)
-		log(context)(
-			`Upload block blob ${blobName} successfully`,
-			uploadBlobResponse.requestId,
-		)
-
+		})
 		const url = `https://${fotaStorageAccountName}.blob.core.windows.net/${fotaStorageContainer}/${blobName}`
-
+		log(context)(`Upload block blob ${blobName} successfully`, url)
 		context.res = r({ success: true, url })
 	} catch (error) {
 		log(context)({
