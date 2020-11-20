@@ -110,7 +110,7 @@ const queryCellGeolocation: AzureFunction = async (
 							})
 						})
 						b.on('fail', () => {
-							resolve()
+							resolve(undefined)
 						})
 						b.backoff()
 					}),
