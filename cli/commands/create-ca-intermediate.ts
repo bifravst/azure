@@ -1,5 +1,5 @@
 import * as chalk from 'chalk'
-import { ComandDefinition } from './CommandDefinition'
+import { CommandDefinition } from './CommandDefinition'
 import { generateCAIntermediate } from '../iot/generateCAIntermediate'
 import { ProvisioningServiceClient } from 'azure-iot-provisioning-service'
 import { add as addToIntermediateRegistry } from '../iot/intermediateRegistry'
@@ -12,7 +12,7 @@ export const createCAIntermediateCommand = ({
 }: {
 	certsDir: string
 	ioTHubDPSConnectionString: () => Promise<string>
-}): ComandDefinition => ({
+}): CommandDefinition => ({
 	command: 'create-ca-intermediate',
 	action: async () => {
 		const id = v4()

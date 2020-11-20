@@ -1,5 +1,5 @@
 import * as chalk from 'chalk'
-import { ComandDefinition } from './CommandDefinition'
+import { CommandDefinition } from './CommandDefinition'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { generateProofOfPosession } from '../iot/generateProofOfPosession'
 import { v4 } from 'uuid'
@@ -16,7 +16,7 @@ export const createCARootCommand = ({
 	resourceGroup: string
 	dpsName: string
 	iotDpsClient: () => Promise<IotDpsClient>
-}): ComandDefinition => ({
+}): CommandDefinition => ({
 	command: 'create-ca-root',
 	action: async () => {
 		const certificateName = `bifravst-root-${v4()}`

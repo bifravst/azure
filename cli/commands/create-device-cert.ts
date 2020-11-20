@@ -1,5 +1,5 @@
 import * as chalk from 'chalk'
-import { ComandDefinition } from './CommandDefinition'
+import { CommandDefinition } from './CommandDefinition'
 import { randomWords } from '@bifravst/random-words'
 import { generateDeviceCertificate } from '../iot/generateDeviceCertificate'
 import { log, debug } from '../logging'
@@ -9,7 +9,7 @@ export const createDeviceCertCommand = ({
 	certsDir,
 }: {
 	certsDir: string
-}): ComandDefinition => ({
+}): CommandDefinition => ({
 	command: 'create-device-cert',
 	options: [
 		{

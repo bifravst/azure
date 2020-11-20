@@ -1,5 +1,5 @@
 import * as chalk from 'chalk'
-import { ComandDefinition } from './CommandDefinition'
+import { CommandDefinition } from './CommandDefinition'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { promises as fs } from 'fs'
 import { CARootFileLocations } from '../iot/caFileLocations'
@@ -14,7 +14,7 @@ export const proofCARootPossessionCommand = ({
 	resourceGroup: string
 	dpsName: string
 	iotDpsClient: () => Promise<IotDpsClient>
-}): ComandDefinition => ({
+}): CommandDefinition => ({
 	command: 'proof-ca-root-possession',
 	action: async () => {
 		const certLocations = CARootFileLocations(certsDir)

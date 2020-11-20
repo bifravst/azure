@@ -1,4 +1,4 @@
-import { ComandDefinition } from './CommandDefinition'
+import { CommandDefinition } from './CommandDefinition'
 import { objectToEnv } from '@bifravst/object-to-env'
 import { fromEnv } from '../../lib/fromEnv'
 import { WebSiteManagementClient } from '@azure/arm-appservice'
@@ -12,7 +12,7 @@ export const reactConfigCommand = ({
 	websiteClient: () => Promise<WebSiteManagementClient>
 	storageClient: () => Promise<StorageManagementClient>
 	resourceGroup: string
-}): ComandDefinition => ({
+}): CommandDefinition => ({
 	command: 'react-config',
 	action: async () => {
 		const [{ hostNames }, { primaryEndpoints }] = await Promise.all([

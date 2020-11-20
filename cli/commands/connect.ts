@@ -1,4 +1,4 @@
-import { ComandDefinition } from './CommandDefinition'
+import { CommandDefinition } from './CommandDefinition'
 import * as chalk from 'chalk'
 import { IotDpsClient } from '@azure/arm-deviceprovisioningservices'
 import { v4 } from 'uuid'
@@ -30,7 +30,7 @@ export const connectCommand = ({
 	certsDir: string
 	version: string
 	resourceGroup: string
-}): ComandDefinition => ({
+}): CommandDefinition => ({
 	command: 'connect <deviceId>',
 	action: async (deviceId: string) => {
 		try {
