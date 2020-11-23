@@ -18,6 +18,7 @@ import {
 } from '../arm/resources'
 import fetch from 'node-fetch'
 import { reactConfigCommand } from './commands/react-config'
+import { flashCommand } from './commands/flash'
 
 const version = JSON.parse(
 	fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'),
@@ -150,6 +151,9 @@ const bifravstCLI = async () => {
 			websiteClient: getWebsiteClient,
 			storageClient: getStoreageClient,
 			resourceGroup,
+		}),
+		flashCommand({
+			certsDir,
 		}),
 	]
 

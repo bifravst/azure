@@ -56,6 +56,13 @@ export const createDeviceCertCommand = ({
 			chalk.green('You can now connect to the broker using'),
 			chalk.blueBright(`node cli connect ${id}`),
 		)
+
+		console.log()
+		console.log(
+			chalk.green('You can now flash the credentials to your device'),
+			chalk.greenBright(`node cli flash`),
+			chalk.blueBright(id),
+		)
 	},
 	help: 'Generate a device certificate and register a device in the registry.',
 })
