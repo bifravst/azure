@@ -63,7 +63,6 @@ export const connectCommand = ({
 						nw: 'LAN',
 						modV: 'device-simulator',
 						brdV: 'device-simulator',
-						appV: version,
 						iccid: '12345678901234567890',
 					},
 					ts: Date.now(),
@@ -77,6 +76,11 @@ export const connectCommand = ({
 						ip: '0.0.0.0',
 					},
 					ts: Date.now(),
+				},
+				firmware: {
+					status: 'current',
+					currentFwVersion: version,
+					pendingFwVersion: '',
 				},
 			} as const
 
@@ -130,12 +134,6 @@ export const connectCommand = ({
 							currentFwVersion: fwVersion,
 							pendingFwVersion: fwVersion,
 							status: Status.CURRENT,
-						},
-						dev: {
-							v: {
-								appV: fwVersion,
-							},
-							ts: Date.now(),
 						},
 					})
 				}, 10 * 1000)
