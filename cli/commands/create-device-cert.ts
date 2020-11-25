@@ -54,7 +54,8 @@ export const createDeviceCertCommand = ({
 
 		console.log(
 			chalk.green('You can now connect to the broker using'),
-			chalk.blueBright(`node cli connect ${id}`),
+			chalk.greenBright(`node cli connect`),
+			chalk.blueBright(id),
 		)
 
 		console.log()

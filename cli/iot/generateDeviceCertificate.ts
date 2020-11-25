@@ -7,6 +7,7 @@ import { deviceFileLocations } from './deviceFileLocations'
 import * as os from 'os'
 import { createCertificate, CertificateCreationResult } from 'pem'
 import { leafCertConfig } from './pemConfig'
+import { run } from '../process/run'
 
 /**
  * Generates a certificate for a device, signed with the CA
@@ -24,7 +25,7 @@ export const generateDeviceCertificate = async ({
 	log?: (...message: any[]) => void
 	debug?: (...message: any[]) => void
 }): Promise<{ deviceId: string }> => {
-	log && log(`Generating certificate for device ${deviceId}`)
+	log?.(`Generating certificate for device ${deviceId}`)
 	const caRootFiles = CARootFileLocations(certsDir)
 	const caIntermediateFiles = CAIntermediateFileLocations({
 		certsDir,
@@ -45,6 +46,21 @@ export const generateDeviceCertificate = async ({
 		fs.readFile(caRootFiles.cert, 'utf-8'),
 	])
 
+	await run({
+		command: 'openssl',
+		args: [
+			'ecparam',
+			'-out',
+			deviceFiles.privateKey,
+			'-name',
+			'prime256v1',
+			'-genkey',
+		],
+		log: debug,
+	})
+
+	const clientKey = await fs.readFile(deviceFiles.privateKey, 'utf-8')
+
 	const deviceCert = await new Promise<CertificateCreationResult>(
 		(resolve, reject) =>
 			createCertificate(
@@ -55,15 +71,16 @@ export const generateDeviceCertificate = async ({
 					config: leafCertConfig(deviceId),
 					serviceKey: intermediatePrivateKey,
 					serviceCertificate: intermediateCert,
+					clientKey,
 				},
 				(err, cert) => {
-					if (err) return reject(err)
+					if (err !== null && err !== undefined) return reject(err)
 					resolve(cert)
 				},
 			),
 	)
 
-	debug && debug(deviceCert.certificate)
+	debug?.(deviceCert.certificate)
 
 	const certWithChain = (
 		await Promise.all([deviceCert.certificate, intermediateCert, rootCert])
@@ -71,20 +88,20 @@ export const generateDeviceCertificate = async ({
 
 	await Promise.all([
 		fs.writeFile(deviceFiles.certWithChain, certWithChain, 'utf-8').then(() => {
-			debug && debug(`${deviceFiles.certWithChain} written`)
+			debug?.(`${deviceFiles.certWithChain} written`)
 		}),
 		fs
 			.writeFile(deviceFiles.privateKey, deviceCert.clientKey, 'utf-8')
 			.then(() => {
-				debug && debug(`${deviceFiles.privateKey} written`)
+				debug?.(`${deviceFiles.privateKey} written`)
 			}),
 		fs.writeFile(deviceFiles.cert, deviceCert.certificate, 'utf-8').then(() => {
-			debug && debug(`${deviceFiles.cert} written`)
+			debug?.(`${deviceFiles.cert} written`)
 		}),
 		fs
 			.writeFile(deviceFiles.intermediateCertId, intermediateCertId, 'utf-8')
 			.then(() => {
-				debug && debug(`${deviceFiles.intermediateCertId} written`)
+				debug?.(`${deviceFiles.intermediateCertId} written`)
 			}),
 	])
 
