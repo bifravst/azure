@@ -47,7 +47,7 @@
     "backoff": "2.5.0",
     "chalk": "4.1.0",
     "check-node-version": "4.0.3",
-    "mqtt": "4.2.5",
+    "mqtt": "4.2.6",
     "node-fetch": "2.6.1",
     "snyk": "1.431.1",
     "uuid": "8.3.1"
