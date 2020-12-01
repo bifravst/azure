@@ -49,7 +49,7 @@
     "check-node-version": "4.0.3",
     "mqtt": "4.2.6",
     "node-fetch": "2.6.1",
-    "snyk": "1.432.0",
+    "snyk": "1.432.1",
     "uuid": "8.3.1"
   },
   "devDependencies": {
