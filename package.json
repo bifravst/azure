@@ -47,7 +47,7 @@
     "mqtt": "4.2.6",
     "node-fetch": "2.6.1",
     "snyk": "1.434.3",
-    "uuid": "8.3.1"
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "@bifravst/code-style": "8.0.134",
