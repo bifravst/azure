@@ -12,7 +12,7 @@ const { fotaStorageAccountName, fotaStorageAccessKey } = fromEnv({
 	fotaStorageAccountName: 'FOTA_STORAGE_ACCOUNT_NAME',
 	fotaStorageAccessKey: 'FOTA_STORAGE_ACCESS_KEY',
 })(process.env)
-const fotaStorageContainer = 'updates'
+const fotaStorageContainer = 'upgrades'
 
 const sharedKeyCredential = new StorageSharedKeyCredential(
 	fotaStorageAccountName,
@@ -26,7 +26,7 @@ const containerClient = blobServiceClient.getContainerClient(
 	fotaStorageContainer,
 )
 
-const storeDeviceUpdate: AzureFunction = async (
+const storeDeviceUpgrade: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
@@ -58,4 +58,4 @@ const storeDeviceUpdate: AzureFunction = async (
 	}
 }
 
-export default storeDeviceUpdate
+export default storeDeviceUpgrade

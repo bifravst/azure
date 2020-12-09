@@ -14,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/storeDeviceUpdate/storeDeviceUpdate.js"
+  "scriptFile": "../dist/storeDeviceUpgrade/storeDeviceUpgrade.js"
 }

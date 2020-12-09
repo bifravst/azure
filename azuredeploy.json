@@ -395,7 +395,7 @@
       }
     },
     {
-      "name": "[concat(parameters('appName'), 'fota','/default/updates')]",
+      "name": "[concat(parameters('appName'), 'fota','/default/upgrades')]",
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2019-06-01",
       "properties": {
