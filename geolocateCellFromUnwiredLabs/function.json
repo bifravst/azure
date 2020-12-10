@@ -1,0 +1,28 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["get"],
+      "route": "cellgeolocation/unwired"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "name": "cellGeolocation",
+      "type": "cosmosDB",
+      "databaseName": "cellGeolocation",
+      "collectionName": "unwiredLabsCache",
+      "createIfNotExists": true,
+      "partitionKey": "/cellId",
+      "connectionStringSetting": "HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING",
+      "direction": "out"
+    }
+  ],
+  "scriptFile": "../dist/geolocateCellFromUnwiredLabs/geolocateCellFromUnwiredLabs.js"
+}

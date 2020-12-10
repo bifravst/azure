@@ -32,7 +32,13 @@ export const connectCommand = ({
 	resourceGroup: string
 }): CommandDefinition => ({
 	command: 'connect <deviceId>',
-	action: async (deviceId: string) => {
+	options: [
+		{
+			flags: '-c, --cellId <cellId>',
+			description: 'The cellId to use when sending roaming information',
+		},
+	],
+	action: async (deviceId: string, { cellId }) => {
 		try {
 			const client = await connectDevice({
 				certsDir,
@@ -72,7 +78,7 @@ export const connectCommand = ({
 						rsrp: 70,
 						area: 30401,
 						mccmnc: 24201,
-						cell: 16964098,
+						cell: cellId === undefined ? 16964098 : parseInt(cellId, 10),
 						ip: '0.0.0.0',
 					},
 					ts: Date.now(),
