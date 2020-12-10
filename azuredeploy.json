@@ -70,6 +70,20 @@
       "metadata": {
         "description": "The number of SignalR Unit."
       }
+    },
+    "unwiredlabsApiKey": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "API key for using the unwiredlabs.com cell geolocation API"
+      }
+    },
+    "unwiredlabsApiEndpoint": {
+      "type": "string",
+      "defaultValue": "https://eu1.unwiredlabs.com/",
+      "metadata": {
+        "description": "Endpoint to use for the unwiredlabs.com cell geolocation API"
+      }
     }
   },
   "variables": {
@@ -315,6 +329,16 @@
             {
               "name": "HISTORICAL_DATA_COSMOSDB_CONNECTION_STRING",
               "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('appName')), providers('Microsoft.DocumentDb', 'databaseAccounts').apiVersions[0]).connectionStrings[0].connectionString]"
+            },
+            {
+              "condition": "[not(empty(parameters('unwiredlabsApiKey')))]",
+              "name": "UNWIREDLABS_API_KEY",
+              "value": "[parameters('unwiredlabsApiKey')]"
+            },
+            {
+              "condition": "[not(empty(parameters('unwiredlabsApiKey')))]",
+              "name": "UNWIREDLABS_API_ENDPOINT",
+              "value": "[parameters('unwiredlabsApiEndpoint')]"
             }
           ],
           "use32BitWorkerProcess": false,
@@ -546,6 +570,52 @@
               }
             ]
           ]
+        }
+      }
+    },
+    {
+      "condition": "[not(empty(parameters('unwiredlabsApiKey')))]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2020-03-01",
+      "name": "[concat(parameters('appName'), '/cellGeolocation/unwiredLabsCache')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('appName'), 'cellGeolocation')]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('appName'))]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "unwiredLabsCache",
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ],
+            "excludedPaths": [
+              {
+                "path": "/\"_etag\"/?"
+              }
+            ]
+          },
+          "partitionKey": {
+            "paths": ["/cellId"],
+            "kind": "Hash"
+          },
+          "conflictResolutionPolicy": {
+            "mode": "LastWriterWins",
+            "conflictResolutionPath": "/_ts"
+          },
+          "compositeIndexes": [
+            [
+              {
+                "path": "/source",
+                "order": "ascending"
+              }
+            ]
+          ],
+          "defaultTtl": 2592000
         }
       }
     }

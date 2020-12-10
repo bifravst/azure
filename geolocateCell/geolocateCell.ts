@@ -29,7 +29,7 @@ const fromDeviceLocations = cellFromGeolocations({
 	percentile: 0.9,
 })
 
-const getDevice: AzureFunction = async (
+const geolocateCell: AzureFunction = async (
 	context: Context,
 	req: HttpRequest,
 ): Promise<void> => {
@@ -63,4 +63,4 @@ const getDevice: AzureFunction = async (
 	}
 }
 
-export default getDevice
+export default geolocateCell
