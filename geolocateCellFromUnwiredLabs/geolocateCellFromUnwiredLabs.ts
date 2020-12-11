@@ -97,7 +97,7 @@ const geolocateCellFromUnwiredLabs: AzureFunction = async (
 		}
 	} catch (error) {
 		console.error({ error })
-		context.res = r(error, 500)
+		context.res = r({ error: error.message }, 500)
 	}
 	context.done()
 }

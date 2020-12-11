@@ -35,7 +35,7 @@ const deleteDevice: AzureFunction = async (
 		log(context)({
 			error: error.message,
 		})
-		context.res = r(error, 500)
+		context.res = r({ error: error.message }, 500)
 	}
 }
 
