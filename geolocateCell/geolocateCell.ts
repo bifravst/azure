@@ -55,11 +55,11 @@ const geolocateCell: AzureFunction = async (
 			context.res = r(location.value)
 			log(context)({ location: location.value })
 		} else {
-			context.res = r(new Error(`Could not resolve cell ${c}`), 404)
+			context.res = r({ error: `Could not resolve cell ${c}` }, 404)
 		}
 	} catch (error) {
 		console.error({ error })
-		context.res = r(error, 500)
+		context.res = r({ error: error.message }, 500)
 	}
 }
 
