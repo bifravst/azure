@@ -18,6 +18,7 @@ import {
 } from '../arm/resources'
 import fetch from 'node-fetch'
 import { reactConfigCommand } from './commands/react-config'
+import { deviceUiConfigCommand } from './commands/device-ui-config'
 import { flashCommand } from './commands/flash'
 
 const version = JSON.parse(
@@ -149,6 +150,10 @@ const bifravstCLI = async () => {
 		}),
 		reactConfigCommand({
 			websiteClient: getWebsiteClient,
+			storageClient: getStoreageClient,
+			resourceGroup,
+		}),
+		deviceUiConfigCommand({
 			storageClient: getStoreageClient,
 			resourceGroup,
 		}),

@@ -15,7 +15,10 @@ export const reactConfigCommand = ({
 }): CommandDefinition => ({
 	command: 'react-config',
 	action: async () => {
-		const [{ hostNames }, { primaryEndpoints }] = await Promise.all([
+		const [
+			{ hostNames },
+			{ primaryEndpoints: appEndpoints },
+		] = await Promise.all([
 			websiteClient().then(async (client) =>
 				client.webApps.get(resourceGroup, `${resourceGroup}api`),
 			),
@@ -36,7 +39,7 @@ export const reactConfigCommand = ({
 						azureClientId: 'APP_REG_CLIENT_ID',
 					})(process.env),
 					azureApiEndpoint: `https://${hostNames?.[0]}/`,
-					url: primaryEndpoints?.web,
+					webAppUrl: appEndpoints?.web,
 				},
 				'REACT_APP_',
 			),

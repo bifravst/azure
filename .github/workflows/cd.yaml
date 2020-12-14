@@ -72,7 +72,7 @@ jobs:
           node cli react-config >> $GITHUB_ENV
       - name: Build app
         run: |
-          echo Hosting at ${{ env.REACT_APP_URL }}
+          echo Hosting at ${{ env.REACT_APP_WEB_APP_URL }}
           export EXTEND_ESLINT=true
           git clone https://github.com/bifravst/app
           cd app
@@ -91,5 +91,5 @@ jobs:
         with:
           token: ${{ github.token }}
           environment: production
-          environment_url: ${{ env.REACT_APP_URL }}
+          environment_url: ${{ env.REACT_APP_WEB_APP_URL }}
           state: success
