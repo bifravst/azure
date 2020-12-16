@@ -39,7 +39,7 @@ jobs:
           sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
           sudo apt-get update
           sudo apt-get install azure-functions-core-tools-3
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: "14.x"
       - name: Keep npm cache around to speed up installs
