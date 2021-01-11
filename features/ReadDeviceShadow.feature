@@ -24,7 +24,7 @@ Feature: Read Device Shadow
           "mvt": 3600,
           "gpst": 1000,
           "celt": 600,
-          "acct": 5
+          "acct": 0.5
         }
       }
       """
@@ -52,7 +52,7 @@ Feature: Read Device Shadow
           "mvt": 3600,
           "gpst": 1000,
           "celt": 600,
-          "acct": 5
+          "acct": 0.5
         },
         "firmware": {
           "status": "current",
