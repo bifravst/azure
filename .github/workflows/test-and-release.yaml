@@ -71,7 +71,12 @@ jobs:
                 b2cTenant=${B2C_TENANT} \
                 b2cFlowName=B2C_1_developer
       - name: Deploy Function App
-        run: func azure functionapp publish ${APP_NAME}api --typescript
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          retry_wait_seconds: 18000
+          max_attempts: 3
+          command: func azure functionapp publish ${APP_NAME}api --typescript
       - name: Determine API endpoint
         run: |
           API_ENDPOINT=https://`az functionapp show -g ${RESOURCE_GROUP_NAME} -n ${APP_NAME}api --query 'defaultHostName' --output tsv | tr -d '\n'`/
