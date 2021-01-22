@@ -39,7 +39,7 @@
     "@bifravst/device-ui-server": "2.0.2",
     "@bifravst/object-to-env": "1.0.1",
     "@bifravst/random-words": "4.2.1",
-    "@octokit/rest": "18.0.12",
+    "@octokit/rest": "18.0.13",
     "azure-iot-provisioning-service": "1.8.7",
     "azure-iothub": "1.13.1",
     "backoff": "2.5.0",
