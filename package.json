@@ -53,7 +53,7 @@
     "@bifravst/code-style": "8.0.134",
     "@bifravst/e2e-bdd-test-runner": "5.0.20",
     "@bifravst/eslint-config-typescript": "5.0.89",
-    "@bifravst/firmware-ci": "5.0.1",
+    "@bifravst/firmware-ci": "5.0.2",
     "@commitlint/cli": "11.0.0",
     "@commitlint/config-angular": "11.0.0",
     "@types/backoff": "2.5.1",
