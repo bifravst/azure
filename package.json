@@ -46,7 +46,7 @@
     "chalk": "4.1.0",
     "mqtt": "4.2.6",
     "node-fetch": "2.6.1",
-    "snyk": "1.440.4",
+    "snyk": "1.440.5",
     "uuid": "8.3.2"
   },
   "devDependencies": {
