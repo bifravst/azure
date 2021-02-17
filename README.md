@@ -1,4 +1,7 @@
-# Google Cloud Platform-based implementation of _Bifravst :smirk_cat::rainbow:_
+> **:truck: moved to https://github.com/NordicSemiconductor/asset-tracker-cloud-azure-js**  
+> :information_source: [more info](https://github.com/bifravst/bifravst/issues/56)
+> 
+> # Google Cloud Platform-based implementation of _Bifravst :smirk_cat::rainbow:_
 
 [![GitHub Actions](https://github.com/Bifravst/azure/workflows/Test%20and%20Release/badge.svg)](https://github.com/Bifravst/azure/actions)
 ![Continuous Deployment](https://github.com/bifravst/azure/workflows/Continuous%20Deployment/badge.svg)
